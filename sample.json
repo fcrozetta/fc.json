@@ -1,0 +1,49 @@
+{
+    "string": "Hello, World!",
+    "number": 42,
+    "float": 3.14159,
+    "boolean": true,
+    "null": null,
+    "object": {
+        "nestedString": "Nested Hello",
+        "nestedNumber": 3.14,
+        "nestedBoolean": false,
+        "nestedList": [1, 2, 3],
+        "nestedObject": {
+            "deepString": "Deep Hello",
+            "deepNumber": 99,
+            "deepBoolean": true,
+            "deepList": ["a", "b", "c"],
+            "deepObject": {
+                "veryDeepString": "Very Deep Hello",
+                "veryDeepNumber": 12345,
+                "veryDeepBoolean": false
+            }
+        }
+    },
+    "list": [
+        {
+            "listObjectString": "List Object Hello",
+            "listObjectNumber": 7.89,
+            "listObjectBoolean": true,
+            "listObjectList": [4, 5, 6],
+            "listObjectNestedObject": {
+                "listDeepString": "List Deep Hello",
+                "listDeepNumber": 678,
+                "listDeepBoolean": false
+            }
+        },
+        {
+            "listObjectString": "Another List Object",
+            "listObjectNumber": 10.11,
+            "listObjectBoolean": false,
+            "listObjectList": [7, 8, 9],
+            "listObjectNestedObject": {
+                "listDeepString": "Another List Deep Hello",
+                "listDeepNumber": 987,
+                "listDeepBoolean": true
+            }
+        }
+    ]
+}
+
