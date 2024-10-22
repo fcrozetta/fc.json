@@ -73,10 +73,10 @@ string type2Text(DataType t){
             result = "float";
             break;
         case Array:
-            result = "Vector";
+            result = "<Vector>";
             break;
         case Object:
-            result = "Object";
+            result = "<Object>";
             break;
         default:
             result = "???";
@@ -159,11 +159,13 @@ private:
                 
             case Array: {
 //                I have no idea how I managed to implement this.
+//                Just realized debugging will be hell... Sorry.
                 auto subType = getType(value[0]);
                 if (subType == DataType::Object){
-                    schema[key] = "Vector<Object>";
+                    schema[key] = "Vector<" + key + "/<Object>>";
                     processJsonValue(value[0],  "<Object>", schema,key);
                 } else if (subType == DataType::Array){
+//                    FIXME: This is not working as it should
                     processJsonValue(value[0],  type2Text(getType(value[0])), schema,key + "/<innerArray>");
                 } else{
                     schema[key] = "Vector<" + type2Text(getType(value[0])) + ">";
@@ -218,7 +220,7 @@ public:
         if (hasAction("table")){
             printTableSchema(this->schema);
         }
-        else if (hasAction("")){
+        else if (hasAction("schema")){
             printRawSchema(this->schema);
         }
     }

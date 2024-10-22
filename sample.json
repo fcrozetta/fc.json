@@ -21,6 +21,18 @@
             }
         }
     },
+    "list_of_lists":[
+        [
+            1,2,3
+        ]
+    ],
+    "list_of_lists_of lists":[
+        [
+            [
+                1,2,3
+            ]
+        ]
+    ],
     "listKey": [
         {
             "listObjectString": "List Object Hello",

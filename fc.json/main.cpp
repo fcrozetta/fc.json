@@ -46,6 +46,12 @@ int main(int argc, const char * argv[]) {
         .flag()
         .store_into(redact);
     
+    bool schema = false;
+    parser.add_argument("-s","--schema")
+        .help("modify output to schema instead of json")
+        .flag()
+        .store_into(schema);
+    
     bool pydantic = false;
     parser.add_argument("--pydantic")
         .help("create pydantic classes based on the json file")
@@ -68,11 +74,15 @@ int main(int argc, const char * argv[]) {
     }
     
     FCJson doc = FCJson(filename);
+    
     if (redact){
         doc.addAction("redact");
     }
     if (table){
         doc.addAction("table");
+    }
+    if (schema) {
+        doc.addAction("schema");
     }
     
     doc.processJson();
