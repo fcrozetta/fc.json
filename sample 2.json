@@ -1,10 +1,10 @@
 {
-    "stringKey": "Hello, World!",
-    "numberKey": 42,
-    "floatKey": 3.14159,
-    "booleanKey": true,
-    "nullKey": null,
-    "objectKey": {
+    "string": "Hello, World!",
+    "number": 42,
+    "float": 3.14159,
+    "boolean": true,
+    "null": null,
+    "object": {
         "nestedString": "Nested Hello",
         "nestedNumber": 3.14,
         "nestedBoolean": false,
@@ -21,7 +21,7 @@
             }
         }
     },
-    "listKey": [
+    "list": [
         {
             "listObjectString": "List Object Hello",
             "listObjectNumber": 7.89,
@@ -44,9 +44,6 @@
                 "listDeepBoolean": true
             }
         }
-    ],
-    "listofNumbers":[1,2,3],
-    "listofFloats":[1.0,2.0,3.0],
-    "listofStrings":["a","b"]
+    ]
 }
 

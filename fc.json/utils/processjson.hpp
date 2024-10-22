@@ -20,44 +20,70 @@
 using namespace std;
 using namespace rapidjson;
 
-std::string generateClass(const std::unordered_map<std::string, std::string>& schema, const std::string& className) {
-    std::ostringstream oss;
+enum DataType{
+    Null,
+    Bool,
+    String,
+    Int,
+    Float,
+    Array,
+    Object,
+    UNDEFINED,
+};
 
-    oss << "class " << className << " {\n";
-    oss << "public:\n";
-
-    for (const auto& field : schema) {
-        if (field.first.find(className + "_") == 0) {
-            std::string fieldName = field.first.substr(className.length() + 1);
-            oss << "    " << field.second << " " << fieldName << ";\n";
-        }
+DataType getType(Value& v){
+    DataType result;
+    if (v.IsNull()) {
+        result = DataType::Null;
+    } else if (v.IsBool()) {
+        result = DataType::Bool;
+    } else if (v.IsString()) {
+        result = DataType::String;
+    } else if (v.IsInt()) {
+        result = DataType::Int;
+    } else if (v.IsFloat()) {
+        result = DataType::Float;
+    } else if (v.IsArray()) {
+        result = DataType::Array;
+    } else if (v.IsObject()) {
+        result = DataType::Object;
+    }else{
+        result = DataType::UNDEFINED;
     }
-
-    oss << "};\n\n";
-
-    return oss.str();
+    
+    return result;
 }
 
-std::string generateClasses(const std::unordered_map<std::string, std::string>& schema) {
-    std::ostringstream oss;
-
-    oss << "#ifndef DYNAMICMODEL_H\n";
-    oss << "#define DYNAMICMODEL_H\n\n";
-    oss << "#include <string>\n";
-    oss << "#include <vector>\n\n";
-
-    std::unordered_map<std::string, bool> generatedClasses;
-    for (const auto& field : schema) {
-        std::string className = field.first.substr(0, field.first.find('_'));
-        if (generatedClasses.find(className) == generatedClasses.end()) {
-            oss << generateClass(schema, className);
-            generatedClasses[className] = true;
-        }
+string type2Text(DataType t){
+    string result;
+    switch (t) {
+        case Null:
+            result = "null";
+            break;
+        case Bool:
+            result = "boolean";
+            break;
+        case String:
+            result = "string";
+            break;
+        case Int:
+            result = "int";
+            break;
+        case Float:
+            result = "float";
+            break;
+        case Array:
+            result = "Vector";
+            break;
+        case Object:
+            result = "Object";
+            break;
+        default:
+            result = "???";
+            break;
     }
-
-    oss << "#endif // DYNAMICMODEL_H\n";
-
-    return oss.str();
+    
+    return result;
 }
 
 
@@ -66,7 +92,7 @@ private:
     string filename;
     Document doc;
     vector<string> actions;
-    unordered_map<string, string> schema;
+    map<string, string> schema;
     
 
     string read_json(){
@@ -84,42 +110,77 @@ private:
         this->doc.Parse(read_json().c_str());
     }
     
-    void processJsonValue(Value& value, unordered_map<string, string>& schema, const string& parentKey = ""){
-        string key = parentKey.empty() ? value.name.GetString() : parentKey + "/" + value.name.GetString();
-//            cout <<key << endl;
-            if (itr->value.IsString()) {
-    //            stringFunc(value);
-                schema[key] = "string";
-            } else if (itr->value.IsInt()) {
-    //            intFunc(value);
-                schema[key] = "int";
-            } else if (itr->value.IsFloat()) {
-    //            floatFunc(value);
-                schema[key] = "float";
-            } else if (itr->value.IsBool()) {
-    //            boolFunc(value);
-                schema[key] = "bool";
-            } else if (itr->value.IsNull()) {
-    //            nullFunc(value);
+    void processJsonValue(Value& value, const string& name, map<string, string>& schema, const string& parentKey = ""){
+        string key;
+        if (name.empty()){
+            key = parentKey;
+        }else{
+            key = parentKey.empty() ? name : parentKey + "/" + name;
+        }
+        
+        DataType tp = getType(value);
+        
+        switch (tp) {
+            case Null:{
                 schema[key] = "null";
-            } else if (itr->value.IsObject()) {
-    //            objectFunc(value);
-                for (auto itr = value.MemberBegin(); itr != value.MemberEnd(); ++itr){
-                
-                schema[key] = key + "_t";
-                processJsonValue(itr, schema, key);
-            } else if (itr->value.IsArray()) {
-    //                arrayFunc(value);
-                schema[key] = "std::vector<" + key + "_t>";
-                for (auto& v: itr->value.GetArray()){
-                    processJsonValue(v[0], schema, key);
-                }
-            } else {
-                schema[key] = "auto?";
+                break;
             }
+                
+            case Bool: {
+                schema[key] = "boolean";
+                break;
+            }
+                
+            case Int:{
+                schema[key] = "int";
+                break;
+            }
+                
+            case Float: {
+                schema[key] = "float";
+                break;
+            }
+                
+            case String: {
+                schema[key] = "string";
+                break;
+            }
+                
+            case Object: {
+                for (auto itr = value.MemberBegin(); itr != value.MemberEnd(); ++itr){
+//                    schema[key] = key + "/t";
+//                    schema[key] = parentKey + "<Object>";
+                    schema[key] = "<Object>";
+                    const string& _name = itr->name.GetString();
+                    processJsonValue(itr->value, _name, schema, key);
+                }
+                break;
+            }
+                
+            case Array: {
+//                I have no idea how I managed to implement this.
+                auto subType = getType(value[0]);
+                if (subType == DataType::Object){
+                    schema[key] = "Vector<Object>";
+                    processJsonValue(value[0],  "<Object>", schema,key);
+                } else if (subType == DataType::Array){
+                    processJsonValue(value[0],  type2Text(getType(value[0])), schema,key + "/<innerArray>");
+                } else{
+                    schema[key] = "Vector<" + type2Text(getType(value[0])) + ">";
+                }
+                
+                break;
+            }
+                
+            default:{
+                schema[key] = "???";
+                break;
+            }
+                
         }
         
     }
+        
     
     bool hasAction(const string& target){
         return find(this->actions.begin(), this->actions.end(), target) != this->actions.end();
@@ -152,9 +213,14 @@ public:
     }
     
     void processJson(){
-        processJsonValue(doc, this->schema);
-        printRawSchema(this->schema);
+        this->processJsonValue(doc,"root", schema);
         
+        if (hasAction("table")){
+            printTableSchema(this->schema);
+        }
+        else if (hasAction("")){
+            printRawSchema(this->schema);
+        }
     }
 
 };

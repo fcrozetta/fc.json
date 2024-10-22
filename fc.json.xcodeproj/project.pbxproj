@@ -21,6 +21,7 @@
 /* Begin PBXFileReference section */
 		C36D50CD2CC689BE00C810BC /* fc.json */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = fc.json; sourceTree = BUILT_PRODUCTS_DIR; };
 		C36D512B2CC6917600C810BC /* sample.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sample.json; sourceTree = "<group>"; };
+		C3E268BD2CC7B82D00F0A19C /* sample 2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "sample 2.json"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -48,6 +49,7 @@
 				C36D50CF2CC689BE00C810BC /* fc.json */,
 				C36D50CE2CC689BE00C810BC /* Products */,
 				C36D512B2CC6917600C810BC /* sample.json */,
+				C3E268BD2CC7B82D00F0A19C /* sample 2.json */,
 			);
 			sourceTree = "<group>";
 		};
@@ -247,6 +249,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -255,6 +259,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

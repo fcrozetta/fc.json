@@ -8,10 +8,10 @@
 #include <iostream>
 
 
-#include "argparse/argparse.hpp"
-#include "rapidjson/document.h"
-#include "rapidjson/prettywriter.h"
-#include "rapidjson/stringbuffer.h"
+#include "include/argparse/argparse.hpp"
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/prettywriter.h"
+#include "include/rapidjson/stringbuffer.h"
 
 #include "utils/processjson.hpp"
 
@@ -52,6 +52,12 @@ int main(int argc, const char * argv[]) {
         .flag()
         .store_into(pydantic);
     
+    bool table = false;
+    parser.add_argument("-t","--table")
+        .help("print as table")
+        .flag()
+        .store_into(table);
+    
 //    Parser loading varables here
     try {
         parser.parse_args(argc,argv);
@@ -64,6 +70,9 @@ int main(int argc, const char * argv[]) {
     FCJson doc = FCJson(filename);
     if (redact){
         doc.addAction("redact");
+    }
+    if (table){
+        doc.addAction("table");
     }
     
     doc.processJson();
