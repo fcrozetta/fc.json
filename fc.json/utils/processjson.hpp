@@ -14,85 +14,83 @@
 #include <sstream>
 #include <string>
 #include <functional>
+#include <typeinfo>
+#include "../include/rapidjson/prettywriter.h"
+#include "../include/rapidjson/stringbuffer.h"
+#include "../include/rapidjson/pointer.h"
 
-#include "schemaGenerator.h"
+#include "schemaGenerator.hpp"
 
 using namespace std;
 using namespace rapidjson;
 
-enum DataType{
-    Null,
-    Bool,
-    String,
-    Int,
-    Float,
-    Array,
-    Object,
-    UNDEFINED,
+static const char* kTypeNames[] =
+    { "Null", "False", "True", "<Object>", "<Array>", "String", "Number" };
+
+class FCMapItem{
+public:
+    string path;
+    string name;
+    string type; // either value type, or name of other FCMapItem
+    
+    FCMapItem(const string& path, const string& name, const string& type): path(path), name(name),type(type) {}
+    
 };
 
-DataType getType(Value& v){
-    DataType result;
-    if (v.IsNull()) {
-        result = DataType::Null;
-    } else if (v.IsBool()) {
-        result = DataType::Bool;
-    } else if (v.IsString()) {
-        result = DataType::String;
-    } else if (v.IsInt()) {
-        result = DataType::Int;
-    } else if (v.IsFloat()) {
-        result = DataType::Float;
-    } else if (v.IsArray()) {
-        result = DataType::Array;
-    } else if (v.IsObject()) {
-        result = DataType::Object;
-    }else{
-        result = DataType::UNDEFINED;
+class FCMap{
+public:
+    vector<FCMapItem> items;
+    
+    
+    vector<FCMapItem> getByPathPrefix(string path){
+        vector<FCMapItem> result;
+        for (const auto& item : items) {
+            if (item.path.starts_with(path)){
+                result.push_back(item);
+            }
+        }
+        return result;
     }
     
-    return result;
-}
-
-string type2Text(DataType t){
-    string result;
-    switch (t) {
-        case Null:
-            result = "null";
-            break;
-        case Bool:
-            result = "boolean";
-            break;
-        case String:
-            result = "string";
-            break;
-        case Int:
-            result = "int";
-            break;
-        case Float:
-            result = "float";
-            break;
-        case Array:
-            result = "<Vector>";
-            break;
-        case Object:
-            result = "<Object>";
-            break;
-        default:
-            result = "???";
-            break;
+    bool hasItem(const string& path){
+        for (const auto& item : items) {
+            if (item.path == path) return true;
+        }
+        return false;
     }
     
-    return result;
-}
-
+    void createTypes(){
+//        Loop the vector and generate the types. If the type points to other item, resolves that as well.
+    }
+    
+    void addItem(const string& path,const string& name = "", const string& type = ""){
+        if (!hasItem(path)){
+            items.push_back(FCMapItem(path,name, type));
+        } else {
+            cout<< "OOPS" << endl;
+            cout << path <<endl;
+        }
+    }
+    
+    void printItems(){
+        for (const auto& item : items) {
+            cout << item.path + "\t" + item.type +"\t" + item.name<< endl;
+        }
+    }
+    
+    
+    
+    
+    
+    
+};
 
 class FCJson {
 private:
     string filename;
     Document doc;
     vector<string> actions;
-    map<string, string> schema;
+    FCMap map;
     
 
     string read_json(){
@@ -108,85 +106,89 @@ private:
     
     void load_json(){
         this->doc.Parse(read_json().c_str());
+        assert(this->doc.IsObject());
     }
     
-    void processJsonValue(Value& value, const string& name, map<string, string>& schema, const string& parentKey = ""){
-        string key;
-        if (name.empty()){
-            key = parentKey;
-        }else{
-            key = parentKey.empty() ? name : parentKey + "/" + name;
-        }
-        
-        DataType tp = getType(value);
-        
-        switch (tp) {
-            case Null:{
-                schema[key] = "null";
-                break;
-            }
-                
-            case Bool: {
-                schema[key] = "boolean";
-                break;
-            }
-                
-            case Int:{
-                schema[key] = "int";
-                break;
-            }
-                
-            case Float: {
-                schema[key] = "float";
-                break;
-            }
-                
-            case String: {
-                schema[key] = "string";
-                break;
-            }
-                
-            case Object: {
-                for (auto itr = value.MemberBegin(); itr != value.MemberEnd(); ++itr){
-//                    schema[key] = key + "/t";
-//                    schema[key] = parentKey + "<Object>";
-                    schema[key] = "<Object>";
-                    const string& _name = itr->name.GetString();
-                    processJsonValue(itr->value, _name, schema, key);
-                }
-                break;
-            }
-                
-            case Array: {
-//                I have no idea how I managed to implement this.
-//                Just realized debugging will be hell... Sorry.
-                auto subType = getType(value[0]);
-                if (subType == DataType::Object){
-                    schema[key] = "Vector<" + key + "/<Object>>";
-                    processJsonValue(value[0],  "<Object>", schema,key);
-                } else if (subType == DataType::Array){
-//                    FIXME: This is not working as it should
-                    processJsonValue(value[0],  type2Text(getType(value[0])), schema,key + "/<innerArray>");
-                } else{
-                    schema[key] = "Vector<" + type2Text(getType(value[0])) + ">";
-                }
-                
-                break;
-            }
-                
-            default:{
-                schema[key] = "???";
-                break;
-            }
-                
-        }
-        
-    }
-        
     
     bool hasAction(const string& target){
         return find(this->actions.begin(), this->actions.end(), target) != this->actions.end();
     }
+    
+    string removeSlash(const string& input){
+        string result = input;
+        for (char& c : result){
+            if (c == '/') {
+                c = '_';                
+            }
+        }
+        return result;
+    }
+    
+    string processObject(const Value& object, string name, string parentPath = ""){
+        string result;
+        string path = parentPath.empty()? name: parentPath + "/" + name;
+//        std::cout << "\n\nStarting object " << parentPath + " + " + name << std::endl;
+        result += "\n\nclass " + removeSlash(path) + "Schema(BaseModel):\n";
+        this->map.addItem(path, name, "<object>");
+        
+        string subClasses;
+        for (rapidjson::Value::ConstMemberIterator itr = object.MemberBegin(); itr != object.MemberEnd(); ++itr) {
+            subClasses += processValue(itr->value, itr->name.GetString(), path );
+        }
+        return result;
+    }
+    
+    string processArray(const Value& array, string name, string parentPath = ""){
+        string result;
+//        cout << "Starting Vector:" << parentPath << name << endl;
+        result += "    " + name + ": list[" + parentPath + "]\n";
+        
+        for (rapidjson::Value::ConstValueIterator itr = array.Begin(); itr != array.End(); ++itr) {
+            if (!itr->IsArray() && !itr->IsObject()){
+                string path = parentPath + "/" + name;
+                string type = kTypeNames[itr->GetType()];
+                this->map.addItem(path, removeSlash(name), "list[" + type + "]");
+//                result += processValue(*itr, "asdasds", parentPath);
+                
+            }
+            
+            break;
+        }
+        
+        return result;
+        
+    }
+    
+    string processValue(const Value& value, string name, string parentPath = ""){
+        string result;
+        if (value.IsObject()) {
+                result += processObject(value,name,parentPath);
+            } else if (value.IsArray()) {
+                result += processArray(value,name,parentPath);
+            } else if (value.IsString()) {
+//                std::cout << "Path:" << parentPath + "/" +  name << " Type:String Value: " << value.GetString() << std::endl;
+                map.addItem(parentPath+"/"+name,name,"string");
+                result += "    " + name + ": str\n";
+            } else if (value.IsInt()) {
+                cout << "    " << name + ": int\n" <<endl;
+//                std::cout << "Path:" << parentPath + "/" +  name << "Type:Int Value:" << value.GetInt() << std::endl;
+                map.addItem(parentPath+"/"+name,name, "int");
+            } else if (value.IsDouble()) {
+                cout << "    " << name + ": float\n" <<endl;
+//                std::cout << "Path:" << parentPath + "/" +  name <<  "Type:Double Value: " << value.GetDouble() << std::endl;
+                map.addItem(parentPath+"/"+name,name,"float");
+            } else if (value.IsBool()) {
+                cout << "    " << name + ": bool\n" <<endl;
+//                std::cout << "Bool: " << value.GetBool() << std::endl;
+                map.addItem(parentPath+"/"+name,name,"bool");
+            } else if (value.IsNull()) {
+                cout << "    " << name + ": None\n" <<endl;
+//                std::cout << "Null" << std::endl;
+                map.addItem(parentPath+"/"+name,name,"null");
+            }
+        return result;
+    }
+    
     
     
     
@@ -214,16 +216,14 @@ public:
         return buffer.GetString();
     }
     
-    void processJson(){
-        this->processJsonValue(doc,"root", schema);
+    void process(){
+//        auto root = this->doc.GetObject();
+        string x = processValue(doc, "Root");
         
-        if (hasAction("table")){
-            printTableSchema(this->schema);
-        }
-        else if (hasAction("schema")){
-            printRawSchema(this->schema);
-        }
+        map.printItems();
+        
     }
+    
 
 };
 

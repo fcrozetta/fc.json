@@ -10,8 +10,7 @@
 
 #include "include/argparse/argparse.hpp"
 #include "include/rapidjson/document.h"
-#include "include/rapidjson/prettywriter.h"
-#include "include/rapidjson/stringbuffer.h"
+
 
 #include "utils/processjson.hpp"
 
@@ -85,7 +84,7 @@ int main(int argc, const char * argv[]) {
         doc.addAction("schema");
     }
     
-    doc.processJson();
+    doc.process();
 //    cout << doc.prettyPrint() <<endl;
     return 0;
 }

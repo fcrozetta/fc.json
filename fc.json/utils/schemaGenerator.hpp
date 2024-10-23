@@ -16,15 +16,23 @@
 #include <functional>
 
 #include "../include/tabulate/tabulate.hpp"
+#include "pydanticSchemaGenerator.hpp"
 
 
 using namespace std;
 using namespace tabulate;
 
+
+void pydantic(const map<string, string>& schema){
+    
+}
+
 void printRawSchema(const map<string, string>& schema){
-    for (const auto& field: schema){
-        cout << field.first + " -> " + field.second<< endl;
-    }
+    Pydantic::generateMultipleSchemas(schema);
+    //
+//    for (const auto& field: schema){
+//        cout << field.first + " -> " + field.second<< endl;
+//    }
 }
 
 void printTableSchema(const map<string, string>& schema){
