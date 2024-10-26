@@ -43,13 +43,6 @@ string generateSingleSchema(const map<string,string>& schema){
                 ++it;
             }
             result += generateSingleSchema(subSchema);
-            
-//            for (const auto& pair : subSchema) {
-//                    std::cout << "Key: " << pair.first << std::endl;
-//                    for (const auto& value : pair.second) {
-//                        std::cout << "  Value: " << value << std::endl;
-//                    }
-//                }
         } else {
             result += "    " + getFieldName(field.first) + ": " + field.second + "\n";
         }

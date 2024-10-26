@@ -27,70 +27,138 @@ using namespace rapidjson;
 static const char* kTypeNames[] =
     { "Null", "False", "True", "<Object>", "<Array>", "String", "Number" };
 
-class FCMapItem{
+enum FCItemType {
+    Undefined,
+    Primitive,
+    Array,
+    Object,
+};
+
+class FCItem{
 public:
-    string path;
-    string name;
-    string type; // either value type, or name of other FCMapItem
+    FCItemType type;
+    string name = "";
+    Type rapidJsonType;
+    vector<FCItem>* children;
+    FCItem* parent;
     
-    FCMapItem(const string& path, const string& name, const string& type): path(path), name(name),type(type) {}
+    
+    FCItem(const string& name, Type rapidJsonType): name(name), rapidJsonType(rapidJsonType) {
+        this->type = FCItemType::Undefined;
+        auto c = vector<FCItem>{};
+        this->children = &c;
+        
+    }
+    
+    void addChild(FCItem child){
+        child.parent = this;
+        children->push_back(child);
+    }
+    
+    string getPath(){
+        if (!this->parent){
+            return name;
+        }
+        return this->parent->getPath()+"/"+this->name + "\n";
+    }
+    
+    string getSchemaType(){
+        switch (type) {
+            case FCItemType::Primitive:{
+                return kTypeNames[rapidJsonType];
+                break;
+            }
+                
+            case FCItemType::Object:{
+                assert(children->size() == 1);
+                return children->front().getSchemaType();
+                break;
+            }
+                
+            case FCItemType::Array: {
+                if (children->size() == 0){
+                    return "list[None]";
+                }
+                vector<string>* childrenTypes = new vector<string>;
+                for (FCItem child: *children){
+                    childrenTypes->push_back(child.getSchemaType());
+                }
+                
+//                Make the responses unique
+                sort(childrenTypes->begin(),childrenTypes->end());
+                childrenTypes->erase(unique(childrenTypes->begin(),childrenTypes->end()),childrenTypes->end());
+                
+                for (auto c : *childrenTypes){
+                    cout << c << endl;
+                }
+                
+                return "";
+                break;
+            }
+                
+            
+            default: {
+                return "???";
+                break;
+            }
+                
+                
+        }
+        
+    }
+    
     
 };
 
-class FCMap{
-public:
-    vector<FCMapItem> items;
-    
-    
-    vector<FCMapItem> getByPathPrefix(string path){
-        vector<FCMapItem> result;
-        for (const auto& item : items) {
-            if (item.path.starts_with(path)){
-                result.push_back(item);
-            }
-        }
-        return result;
-    }
-    
-    bool hasItem(const string& path){
-        for (const auto& item : items) {
-            if (item.path == path) return true;
-        }
-        return false;
-    }
-    
-    void createTypes(){
-//        Loop the vector and generate the types. If the type points to other item, resolves that as well.
-    }
-    
-    void addItem(const string& path,const string& name = "", const string& type = ""){
-        if (!hasItem(path)){
-            items.push_back(FCMapItem(path,name, type));
-        } else {
-            cout<< "OOPS" << endl;
-            cout << path <<endl;
-        }
-    }
-    
-    void printItems(){
-        for (const auto& item : items) {
-            cout << item.path + "\t" + item.type +"\t" + item.name<< endl;
-        }
-    }
-    
-    
-    
-    
-    
-    
-};
+//class FCMap{
+//public:
+//    vector<FCItem> items;
+//    
+//    
+//    vector<FCItem> getByPathPrefix(string path){
+//        vector<FCItem> result;
+//        for (const auto& item : items) {
+//            if (item.path.starts_with(path)){
+//                result.push_back(item);
+//            }
+//        }
+//        return result;
+//    }
+//    
+//    bool hasItem(const string& path){
+//        for (const auto& item : items) {
+//            if (item.path == path) return true;
+//        }
+//        return false;
+//    }
+//    
+//    void createTypes(){
+////        Loop the vector and generate the types. If the type points to other item, resolves that as well.
+//    }
+//    
+//    void addItem(const string& path,const string& name = "", const string& type = ""){
+//        if (!hasItem(path)){
+//            items.push_back(FCItem(path,name, type));
+//        } else {
+//            cout<< "OOPS" << endl;
+//            cout << path <<endl;
+//        }
+//    }
+//    
+//    void printItems(){
+////        for (const auto& item : items) {
+////            cout << item.path + "\t" + item.type +"\t" + item.name<< endl;
+////        }
+//    }
+//};
 
 class FCJson {
 private:
     string filename;
     Document doc;
     vector<string> actions;
-    FCMap map;
+//    FCMapItem map;
+    FCItem* root;
     
 
     string read_json(){
@@ -124,69 +192,60 @@ private:
         return result;
     }
     
-    string processObject(const Value& object, string name, string parentPath = ""){
-        string result;
-        string path = parentPath.empty()? name: parentPath + "/" + name;
-//        std::cout << "\n\nStarting object " << parentPath + " + " + name << std::endl;
-        result += "\n\nclass " + removeSlash(path) + "Schema(BaseModel):\n";
-        this->map.addItem(path, name, "<object>");
-        
-        string subClasses;
-        for (rapidjson::Value::ConstMemberIterator itr = object.MemberBegin(); itr != object.MemberEnd(); ++itr) {
-            subClasses += processValue(itr->value, itr->name.GetString(), path );
-        }
-        return result;
-    }
-    
-    string processArray(const Value& array, string name, string parentPath = ""){
-        string result;
-//        cout << "Starting Vector:" << parentPath << name << endl;
-        result += "    " + name + ": list[" + parentPath + "]\n";
-        
-        for (rapidjson::Value::ConstValueIterator itr = array.Begin(); itr != array.End(); ++itr) {
-            if (!itr->IsArray() && !itr->IsObject()){
-                string path = parentPath + "/" + name;
-                string type = kTypeNames[itr->GetType()];
-                this->map.addItem(path, removeSlash(name), "list[" + type + "]");
-//                result += processValue(*itr, "asdasds", parentPath);
-                
-            }
+    void processObject(const Value& object, string name, FCItem* parent){
+        auto current = FCItem(name, Type::kObjectType);
+        current.type = FCItemType::Object;
+        if (parent->type == FCItemType::Undefined) {
+            root = &current;
+        }else{
+            current.parent = parent;
+            parent->children->push_back(current);
             
-            break;
         }
         
-        return result;
         
+        for (rapidjson::Value::ConstMemberIterator itr = object.MemberBegin(); itr != object.MemberEnd(); ++itr) {
+            this->processValue(itr->value, itr->name.GetString(), &current );
+        }
     }
     
-    string processValue(const Value& value, string name, string parentPath = ""){
-        string result;
+    void processArray(const Value& array, string name, FCItem* parent){
+        auto current = FCItem(name, Type::kArrayType);
+        
+//        for (const Value& v : array.GetArray()) {
+//            processValue(v, "", &parent);
+//        }
+//        for (rapidjson::Value::ConstValueIterator itr = array.Begin(); itr != array.End(); ++itr) {
+////            TODO: Array<Array<T>> need to be covered
+//            if (!itr->IsArray() && !itr->IsObject()){
+//                auto childType = itr->
+//            }
+            
+//            break;
+//        }
+    }
+    
+    void processValue(const Value& value, string name, FCItem* parent){
         if (value.IsObject()) {
-                result += processObject(value,name,parentPath);
-            } else if (value.IsArray()) {
-                result += processArray(value,name,parentPath);
-            } else if (value.IsString()) {
-//                std::cout << "Path:" << parentPath + "/" +  name << " Type:String Value: " << value.GetString() << std::endl;
-                map.addItem(parentPath+"/"+name,name,"string");
-                result += "    " + name + ": str\n";
-            } else if (value.IsInt()) {
-                cout << "    " << name + ": int\n" <<endl;
-//                std::cout << "Path:" << parentPath + "/" +  name << "Type:Int Value:" << value.GetInt() << std::endl;
-                map.addItem(parentPath+"/"+name,name, "int");
-            } else if (value.IsDouble()) {
-                cout << "    " << name + ": float\n" <<endl;
-//                std::cout << "Path:" << parentPath + "/" +  name <<  "Type:Double Value: " << value.GetDouble() << std::endl;
-                map.addItem(parentPath+"/"+name,name,"float");
-            } else if (value.IsBool()) {
-                cout << "    " << name + ": bool\n" <<endl;
-//                std::cout << "Bool: " << value.GetBool() << std::endl;
-                map.addItem(parentPath+"/"+name,name,"bool");
-            } else if (value.IsNull()) {
-                cout << "    " << name + ": None\n" <<endl;
-//                std::cout << "Null" << std::endl;
-                map.addItem(parentPath+"/"+name,name,"null");
-            }
-        return result;
+            processObject(value,name,parent);
+        } else if (value.IsArray()) {
+            processArray(value,name,parent);
+        } else if (value.IsString()) {
+            auto current = FCItem(name, Type::kStringType);
+            parent->children->push_back(current);
+        } else if (value.IsInt()) {
+            auto current = FCItem(name, Type::kNumberType);
+            parent->children->push_back(current);
+        } else if (value.IsDouble()) {
+            auto current = FCItem(name, Type::kNumberType);
+            parent->children->push_back(current);
+        } else if (value.IsBool()) {
+            auto current = FCItem(name, Type::kTrueType);
+            parent->children->push_back(current);
+        } else if (value.IsNull()) {
+            auto current = FCItem(name, Type::kNullType);
+            parent->children->push_back(current);
+        }
     }
     
     
@@ -196,6 +255,8 @@ public:
     FCJson(string& filename){
         this->filename = filename;
         this->load_json();
+        auto empty = FCItem("", Type::kNullType);
+        root = &empty;
     }
     
     void setActions(vector<string> actions){
@@ -217,10 +278,9 @@ public:
     }
     
     void process(){
-//        auto root = this->doc.GetObject();
-        string x = processValue(doc, "Root");
+        processValue(doc, "Root", root);
         
-        map.printItems();
+        cout<< root->getPath()<< endl;
         
     }
     

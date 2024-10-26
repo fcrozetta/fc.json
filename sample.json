@@ -1,9 +1,12 @@
 {
     "object": {
-        "nestedString": "Nested Hello",
-        "nestedNumber": 3.14,
-        "nestedBoolean": false,
-        "nestedList": [1, 2, 3]
+        "object2" : {
+            "object3" : {
+                "myKey": "helloo"
+            }
+        },
+        
+        "object3" : [1,2,3, [4,5,6] ]
         
     }
 

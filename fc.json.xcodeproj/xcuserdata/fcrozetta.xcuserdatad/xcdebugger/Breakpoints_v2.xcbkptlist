@@ -56,7 +56,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "516A9CFB-479C-4D1B-8C66-62D960D4D98D"
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "fc.json/main.cpp"
@@ -94,8 +94,8 @@
             filePath = "fc.json/utils/processjson.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "230"
-            endingLineNumber = "230"
+            startingLineNumber = "290"
+            endingLineNumber = "290"
             landmarkName = "unknown"
             landmarkType = "0">
          </BreakpointContent>
@@ -119,22 +119,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "F7D80E0C-A801-4770-9607-9A73ED0A43D6"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "fc.json/utils/pydanticSchemaGenerator.hpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "47"
-            endingLineNumber = "47"
-            landmarkName = "generateSingleSchema(schema)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "B61711CA-DE80-43BF-95D9-2D1AAAE366C2"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -142,25 +126,9 @@
             filePath = "fc.json/utils/pydanticSchemaGenerator.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "63"
-            endingLineNumber = "63"
+            startingLineNumber = "56"
+            endingLineNumber = "56"
             landmarkName = "generateMultipleSchemas(schema)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "5C4BC62E-E441-46CE-A9C2-9B3597058BDF"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "fc.json/utils/pydanticSchemaGenerator.hpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "48"
-            endingLineNumber = "48"
-            landmarkName = "generateSingleSchema(schema)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -284,9 +252,9 @@
             filePath = "fc.json/utils/processjson.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "164"
-            endingLineNumber = "164"
-            landmarkName = "processValue(value, name)"
+            startingLineNumber = "229"
+            endingLineNumber = "229"
+            landmarkName = "processValue(value, name, parent)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -300,8 +268,8 @@
             filePath = "fc.json/utils/processjson.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "225"
-            endingLineNumber = "225"
+            startingLineNumber = "285"
+            endingLineNumber = "285"
             landmarkName = "process()"
             landmarkType = "7">
          </BreakpointContent>
@@ -309,16 +277,216 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "4CEB79B8-9AC5-454B-AAD4-08F0D93C9E97"
+            uuid = "5A76BD64-8E88-43C0-A4F9-61B09CD7C66F"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fc.json/utils/processjson.hpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "283"
+            endingLineNumber = "283"
+            landmarkName = "process()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "5A76BD64-8E88-43C0-A4F9-61B09CD7C66F - 13e5366314c577f1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::process()"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "282"
+                  endingLineNumber = "282">
+               </Location>
+               <Location
+                  uuid = "5A76BD64-8E88-43C0-A4F9-61B09CD7C66F - 13e5366314c57792"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::process()"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "283"
+                  endingLineNumber = "283">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "5B88398E-AAF2-443E-B754-9EDE3EF4A0F4"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fc.json/utils/processjson.hpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "207"
+            endingLineNumber = "207"
+            landmarkName = "processObject(object, name, parent)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "5B88398E-AAF2-443E-B754-9EDE3EF4A0F4 - 4e7b8451a500d441"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::processObject(rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;, FCItem*)"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "205"
+                  endingLineNumber = "205">
+               </Location>
+               <Location
+                  uuid = "5B88398E-AAF2-443E-B754-9EDE3EF4A0F4 - 4e7b8451a500d583"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::processObject(rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;, FCItem*)"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "207"
+                  endingLineNumber = "207">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "21751208-0F37-4A71-B746-BC270F3F2147"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fc.json/utils/processjson.hpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "208"
+            endingLineNumber = "208"
+            landmarkName = "processObject(object, name, parent)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "21751208-0F37-4A71-B746-BC270F3F2147 - 4e7b8451a500d460"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::processObject(rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;, FCItem*)"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "206"
+                  endingLineNumber = "206">
+               </Location>
+               <Location
+                  uuid = "21751208-0F37-4A71-B746-BC270F3F2147 - 4e7b8451a500d5a2"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::processObject(rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;, FCItem*)"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "208"
+                  endingLineNumber = "208">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "520FE39A-E9EE-459E-8E0B-15CFFE4CDDF5"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fc.json/utils/processjson.hpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "198"
+            endingLineNumber = "198"
+            landmarkName = "processObject(object, name, parent)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "520FE39A-E9EE-459E-8E0B-15CFFE4CDDF5 - 4e7b8451a500d31e"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::processObject(rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;, FCItem*)"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "196"
+                  endingLineNumber = "196">
+               </Location>
+               <Location
+                  uuid = "520FE39A-E9EE-459E-8E0B-15CFFE4CDDF5 - 4e7b8451a500d358"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "FCJson::processObject(rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;, FCItem*)"
+                  moduleName = "fc.json"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fcrozetta/projects/fc.json/fc.json/utils/processjson.hpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "198"
+                  endingLineNumber = "198">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0EEDF093-C83C-44BF-AF9E-2A0D34BA7684"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "fc.json/utils/processjson.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "150"
-            endingLineNumber = "150"
-            landmarkName = "processArray(array, name)"
+            startingLineNumber = "78"
+            endingLineNumber = "78"
+            landmarkName = "getSchemaType()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "54D86E5E-7D13-4A96-A3D1-5A78B94A6575"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fc.json/utils/processjson.hpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "66"
+            endingLineNumber = "66"
+            landmarkName = "getSchemaType()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

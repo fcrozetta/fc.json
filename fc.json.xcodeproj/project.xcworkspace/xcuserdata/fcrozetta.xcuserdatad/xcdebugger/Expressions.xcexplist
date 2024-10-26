@@ -33,5 +33,13 @@
       <ContextState
          contextName = "FCJson::processJson&lt;rapidjson::GenericDocument&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt;, rapidjson::CrtAllocator&gt;&gt;:processjson.hpp">
       </ContextState>
+      <ContextState
+         contextName = "FCJson::processObject:processjson.hpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "typeid(parent-&gt;type) != typeid(Type::kNullType">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
    </ContextStates>
 </VariablesViewState>
