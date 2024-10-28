@@ -44,6 +44,7 @@ jobs:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
         run: |
+          echo "$MACOS_CERTIFICATE";
           echo "$MACOS_CERTIFICATE" | base64 --decode > macos_cert.p12
           security create-keychain -p "password" build.keychain
           security import macos_cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
