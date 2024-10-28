@@ -58,6 +58,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-macos
     steps:
+      - id: echoUrl
+        run: echo ->${{needs.create_release.outputs.upload_url}}<-
+
       - name: Download macOS Artifacts
         uses: actions/download-artifact@v4
         with:
