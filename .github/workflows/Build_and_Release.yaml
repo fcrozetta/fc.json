@@ -3,12 +3,12 @@ name: Build and Release
 on:
   release:
     types: [published]
-  # push:
-  #   branches:
-  #     - main  # or specify the branch to trigger builds on push
-  # pull_request:
-  #   branches:
-  #     - main  # trigger builds on pull requests
+  push:
+    branches:
+      - main # or specify the branch to trigger builds on push
+  pull_request:
+    branches:
+      - main # trigger builds on pull requests
 
 jobs:
   build-macos:
