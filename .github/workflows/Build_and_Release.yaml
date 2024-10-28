@@ -1,18 +1,36 @@
 name: Build and Release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch: # Manually trigger workflow
   push:
-    branches:
-      - main # or specify the branch to trigger builds on push
-  pull_request:
-    branches:
-      - main # trigger builds on pull requests
+    tags:
+      - "v*.*.*" # Automatically trigger on version tags like v1.0.0
 
 jobs:
+  release:
+    runs-on: ubuntu-latest # Use ubuntu as the base environment for the release job
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Release Version
+        id: vars
+        run: echo "RELEASE_TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          release_name: Release ${{ env.RELEASE_TAG }}
+          draft: false
+          prerelease: false
+
   build-macos:
     runs-on: macos-latest
+    needs: release # Ensures macOS build starts after release job
     strategy:
       matrix:
         arch: [arm64]
@@ -21,27 +39,20 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: |
-          # Install dependencies needed for your project
-          # e.g., brew install or similar based on your project's needs
-          brew install gcc
+        run: brew install gcc
 
       - name: Build for macOS ${{ matrix.arch }}
-        run: |
-          # Replace this command with the actual build command
-          # Use `arch -x86_64` or `arch -arm64` if needed
-          # Include settings for universal binaries if required
-          make ARCH=${{ matrix.arch }}  # or cmake if CMake is used
-          make macos
+        run: make ARCH=${{ matrix.arch }}
 
-      - name: Upload macOS Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v2
         with:
-          name: fc.json_macos_universal
-          path: output/
+          name: macos-${{ matrix.arch }}
+          path: output/*
 
   # build-linux:
   #   runs-on: ubuntu-latest
+  #   needs: release
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v2
@@ -50,38 +61,61 @@ jobs:
   #       run: |
   #         sudo apt-get update
   #         sudo apt-get install -y build-essential
-  #         # Additional dependencies specific to your project
 
   #     - name: Build for Linux
-  #       run: |
-  #         # Run your Linux build commands here
-  #         make  # or cmake, adapt based on your project
-  #         make linux
+  #       run: make
 
-  #     - name: Upload Linux Build Artifact
-  #       uses: actions/upload-artifact@v4
+  #     - name: Upload Linux Artifact
+  #       uses: actions/upload-artifact@v2
   #       with:
-  #         name: fc.json_linux
-  #         path: ./
+  #         name: linux
+  #         path: output/*
 
   # build-windows:
   #   runs-on: windows-latest
+  #   needs: release
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v2
 
   #     - name: Install dependencies
-  #       run: |
-  #         # Use choco or any required installation commands for dependencies
+  #       run: choco install make -y
 
   #     - name: Build for Windows 64-bit
-  #       run: |
-  #         # Run Windows-specific build commands
-  #         make  # or cmake
-  #         make windows
+  #       run: make
 
-  #     - name: Upload Windows Build Artifact
-  #       uses: actions/upload-artifact@v4
+  #     - name: Upload Windows Artifact
+  #       uses: actions/upload-artifact@v2
   #       with:
-  #         name: fc.json_windows
-  #         path: ./
+  #         name: windows
+  #         path: output/*
+
+  upload-assets:
+    runs-on: ubuntu-latest
+    # needs: [build-macos, build-linux, build-windows]
+    needs: [build-macos]
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: macos-arm64
+          path: ./artifacts
+        # with:
+        #   name: macos-amd64
+        #   path: ./artifacts
+        # with:
+        #   name: linux
+        #   path: ./artifacts
+        # with:
+        #   name: windows
+        #   path: ./artifacts
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/*
+          asset_name: "${{ matrix.os }}_${{ matrix.arch }}_binary"
+          asset_content_type: application/octet-stream
