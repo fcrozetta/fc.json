@@ -39,13 +39,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Decode and Import PEM Certificate
+      - name: Decode and Import .p12 Certificate
         env:
-          MACOS_CERT_PEM: ${{ secrets.MACOS_CERT_PEM }}
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
         run: |
-          echo "$MACOS_CERT_PEM" | base64 --decode > macos_cert.pem
+          echo "$MACOS_CERTIFICATE" | base64 --decode > macos_cert.p12
           security create-keychain -p "password" build.keychain
-          security import macos_cert.pem -k build.keychain -T /usr/bin/codesign
+          security import macos_cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
           security default-keychain -s build.keychain
           security unlock-keychain -p "password" build.keychain
           security set-key-partition-list -S apple-tool:,apple: -s -k "password" build.keychain
@@ -71,17 +72,23 @@ jobs:
           zip -r fc.json.zip fc.json
           cd ..
 
+      - name: Decode App Store Connect API Key
+        env:
+          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+        run: |
+          echo "$APP_STORE_CONNECT_KEY" | base64 --decode > AuthKey.p8
+
       - name: Notarize CLI Binary
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun altool --notarize-app -f output/fc.json.zip --primary-bundle-id "dev.fcrozetta.fc.json" -u "$APPLE_ID" -p "$APPLE_APP_SPECIFIC_PASSWORD"
+          xcrun notarytool submit output/fc.json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait
 
-      - name: Wait for Notarization
-        run: |
-          sleep 60  # Wait for Apple to process
-          xcrun altool --notarization-info "$REQUEST_UUID" -u "$APPLE_ID" -p "$APPLE_APP_SPECIFIC_PASSWORD"
+      # - name: Wait for Notarization
+      #   run: |
+      #     sleep 60  # Wait for Apple to process
+      #     xcrun altool --notarization-info "$REQUEST_UUID" -u "$APPLE_ID" -p "$APPLE_APP_SPECIFIC_PASSWORD"
 
       - name: Staple Notarization Ticket
         run: |
