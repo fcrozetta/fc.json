@@ -24,7 +24,7 @@ jobs:
         run: |
           # Install dependencies needed for your project
           # e.g., brew install or similar based on your project's needs
-          brew install gcc lzip lipo
+          brew install gcc
 
       - name: Build for macOS ${{ matrix.arch }}
         run: |
