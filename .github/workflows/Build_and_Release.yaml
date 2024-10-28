@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Manually trigger workflow
   push:
     tags:
-      - "v*.*.*" # Automatically trigger on version tags like v1.0.0
+      - "*.*.*" # Automatically trigger on version tags like v1.0.0
 
 jobs:
   release:
