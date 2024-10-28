@@ -1,0 +1,87 @@
+name: Build and Release
+
+on:
+  releases:
+    types: [published]
+  # push:
+  #   branches:
+  #     - main  # or specify the branch to trigger builds on push
+  # pull_request:
+  #   branches:
+  #     - main  # trigger builds on pull requests
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [arm64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          # Install dependencies needed for your project
+          # e.g., brew install or similar based on your project's needs
+          brew install gcc lipo
+
+      - name: Build for macOS ${{ matrix.arch }}
+        run: |
+          # Replace this command with the actual build command
+          # Use `arch -x86_64` or `arch -arm64` if needed
+          # Include settings for universal binaries if required
+          make ARCH=${{ matrix.arch }}  # or cmake if CMake is used
+          make macos
+
+      - name: Upload macOS Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: fc.json_macos_universal
+          path: ./
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+          # Additional dependencies specific to your project
+
+      - name: Build for Linux
+        run: |
+          # Run your Linux build commands here
+          make  # or cmake, adapt based on your project
+          make linux
+
+      - name: Upload Linux Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: fc.json_linux
+          path: ./
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          # Use choco or any required installation commands for dependencies
+
+      - name: Build for Windows 64-bit
+        run: |
+          # Run Windows-specific build commands
+          make  # or cmake
+          make windows
+
+      - name: Upload Windows Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: fc.json_windows
+          path: ./
