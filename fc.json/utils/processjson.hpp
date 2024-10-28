@@ -25,7 +25,7 @@ using namespace std;
 using namespace rapidjson;
 
 static const char* kTypeNames[] =
-    { "Null", "False", "True", "<Object>", "<Array>", "String", "Number" };
+{ "Null", "False", "True", "<Object>", "<Array>", "String", "Number" };
 
 enum FCItemType {
     Undefined,
@@ -39,60 +39,103 @@ public:
     FCItemType type;
     string name = "";
     Type rapidJsonType;
-    vector<FCItem>* children;
+    list<FCItem*> children;
     FCItem* parent;
     
-    
-    FCItem(const string& name, Type rapidJsonType): name(name), rapidJsonType(rapidJsonType) {
+       
+    FCItem(){
+        this->name="";
         this->type = FCItemType::Undefined;
-        auto c = vector<FCItem>{};
-        this->children = &c;
+        this->rapidJsonType = Type::kNullType;
+        this->parent = nullptr;
         
     }
     
-    void addChild(FCItem child){
-        child.parent = this;
-        children->push_back(child);
+    string removeSlash(const string& input){
+        string result = input;
+        for (char& c : result){
+            if (c == '/') {
+                c = '_';
+            }
+        }
+        return result;
+    }
+    
+    void printSummary(){
+        cout << getPath() +" -> "+kTypeNames[rapidJsonType]<< endl;
     }
     
     string getPath(){
-        if (!this->parent){
+        if (this->parent == NULL){
             return name;
         }
-        return this->parent->getPath()+"/"+this->name + "\n";
+        return this->parent->getPath()+"/"+this->name;
     }
     
-    string getSchemaType(){
+    string getSchemaName(){
+        //        TODO: Update response to match the correct schema  (pydantic for now)
         switch (type) {
             case FCItemType::Primitive:{
+                switch (rapidJsonType) {
+                    case Type::kNullType:
+                        return "None";
+                        break;
+                    case Type::kTrueType:
+                    case Type::kFalseType:
+                        return "bool";
+                        break;
+                    case Type::kNumberType:
+//                        This has to be solved
+                        return "float";
+                        break;
+                    case Type::kStringType:
+                        return "str";
+                        break;
+                    default:
+                        break;
+                }
                 return kTypeNames[rapidJsonType];
                 break;
             }
                 
             case FCItemType::Object:{
-                assert(children->size() == 1);
-                return children->front().getSchemaType();
+                return removeSlash(getPath() + "Schema");
                 break;
             }
                 
             case FCItemType::Array: {
-                if (children->size() == 0){
+                if (children.size() == 0){
                     return "list[None]";
                 }
-                vector<string>* childrenTypes = new vector<string>;
-                for (FCItem child: *children){
-                    childrenTypes->push_back(child.getSchemaType());
+                vector<string> childrenTypes = vector<string>{};
+                for (FCItem* child: children){
+                    childrenTypes.push_back(child->getSchemaName());
                 }
                 
-//                Make the responses unique
-                sort(childrenTypes->begin(),childrenTypes->end());
-                childrenTypes->erase(unique(childrenTypes->begin(),childrenTypes->end()),childrenTypes->end());
+                //                This makes the responses unique.
+                sort(childrenTypes.begin(),childrenTypes.end());
+                childrenTypes
+                    .erase(unique(childrenTypes.begin(),childrenTypes.end()),
+                           childrenTypes.end());
                 
-                for (auto c : *childrenTypes){
-                    cout << c << endl;
+                //                If it is a list, we may have the prefix/suffix. This also changes if you have multiple object types
+                string prefix = "list[";
+                string suffix = "]";
+                
+                if (childrenTypes.size()>1){
+                    prefix += "Union[";
+                    suffix += "]";
                 }
                 
-                return "";
+                ostringstream oss;
+                for (size_t i = 0; i< childrenTypes.size();++i){
+                    if (i != 0){
+                        oss << ',';
+                    }
+                    oss << childrenTypes[i];
+                }
+                
+                return prefix + oss.str() + suffix;
                 break;
             }
                 
@@ -110,55 +153,14 @@ public:
     
 };
 
-//class FCMap{
-//public:
-//    vector<FCItem> items;
-//    
-//    
-//    vector<FCItem> getByPathPrefix(string path){
-//        vector<FCItem> result;
-//        for (const auto& item : items) {
-//            if (item.path.starts_with(path)){
-//                result.push_back(item);
-//            }
-//        }
-//        return result;
-//    }
-//    
-//    bool hasItem(const string& path){
-//        for (const auto& item : items) {
-//            if (item.path == path) return true;
-//        }
-//        return false;
-//    }
-//    
-//    void createTypes(){
-////        Loop the vector and generate the types. If the type points to other item, resolves that as well.
-//    }
-//    
-//    void addItem(const string& path,const string& name = "", const string& type = ""){
-//        if (!hasItem(path)){
-//            items.push_back(FCItem(path,name, type));
-//        } else {
-//            cout<< "OOPS" << endl;
-//            cout << path <<endl;
-//        }
-//    }
-//    
-//    void printItems(){
-////        for (const auto& item : items) {
-////            cout << item.path + "\t" + item.type +"\t" + item.name<< endl;
-////        }
-//    }
-//};
-
 class FCJson {
 private:
     string filename;
     Document doc;
     vector<string> actions;
-//    FCMapItem map;
-    FCItem* root;
+    list<FCItem> tree;
+    //    FCMapItem map;
+    //    FCItem root;
     
 
     string read_json(){
@@ -182,69 +184,55 @@ private:
         return find(this->actions.begin(), this->actions.end(), target) != this->actions.end();
     }
     
-    string removeSlash(const string& input){
-        string result = input;
-        for (char& c : result){
-            if (c == '/') {
-                c = '_';                
-            }
-        }
-        return result;
-    }
+    
     
     void processObject(const Value& object, string name, FCItem* parent){
-        auto current = FCItem(name, Type::kObjectType);
+        tree.emplace_back(FCItem());
+        FCItem& current = tree.back();
         current.type = FCItemType::Object;
-        if (parent->type == FCItemType::Undefined) {
-            root = &current;
-        }else{
+        current.name = name;
+        current.rapidJsonType = Type::kObjectType;
+        if (parent){
+            parent->children.push_back(&current);
             current.parent = parent;
-            parent->children->push_back(current);
             
         }
-        
         
         for (rapidjson::Value::ConstMemberIterator itr = object.MemberBegin(); itr != object.MemberEnd(); ++itr) {
             this->processValue(itr->value, itr->name.GetString(), &current );
         }
+        
     }
     
     void processArray(const Value& array, string name, FCItem* parent){
-        auto current = FCItem(name, Type::kArrayType);
+        tree.emplace_back(FCItem());
+        FCItem& current = tree.back();
+        current.name = name;
+        current.rapidJsonType = Type::kArrayType;
+        current.type = FCItemType::Array;
+        parent->children.push_back(&current);
+        current.parent = parent;
         
-//        for (const Value& v : array.GetArray()) {
-//            processValue(v, "", &parent);
-//        }
-//        for (rapidjson::Value::ConstValueIterator itr = array.Begin(); itr != array.End(); ++itr) {
-////            TODO: Array<Array<T>> need to be covered
-//            if (!itr->IsArray() && !itr->IsObject()){
-//                auto childType = itr->
-//            }
-            
-//            break;
-//        }
+        size_t index = 0;
+        for (const Value& v: array.GetArray()){
+            this->processValue(v, to_string(index), &current);
+            index++;
+        }
     }
     
     void processValue(const Value& value, string name, FCItem* parent){
         if (value.IsObject()) {
-            processObject(value,name,parent);
+            processObject(value, name, parent);
         } else if (value.IsArray()) {
             processArray(value,name,parent);
-        } else if (value.IsString()) {
-            auto current = FCItem(name, Type::kStringType);
-            parent->children->push_back(current);
-        } else if (value.IsInt()) {
-            auto current = FCItem(name, Type::kNumberType);
-            parent->children->push_back(current);
-        } else if (value.IsDouble()) {
-            auto current = FCItem(name, Type::kNumberType);
-            parent->children->push_back(current);
-        } else if (value.IsBool()) {
-            auto current = FCItem(name, Type::kTrueType);
-            parent->children->push_back(current);
-        } else if (value.IsNull()) {
-            auto current = FCItem(name, Type::kNullType);
-            parent->children->push_back(current);
+        } else {
+            this->tree.emplace_back(FCItem());
+            FCItem& current = tree.back();
+            current.name = name;
+            current.rapidJsonType = value.GetType();
+            current.type = FCItemType::Primitive;
+            current.parent = parent;
+            parent->children.push_back(&current);
         }
     }
     
@@ -255,8 +243,7 @@ public:
     FCJson(string& filename){
         this->filename = filename;
         this->load_json();
-        auto empty = FCItem("", Type::kNullType);
-        root = &empty;
+        this->tree = list<FCItem>{};
     }
     
     void setActions(vector<string> actions){
@@ -271,17 +258,35 @@ public:
     string prettyPrint(){
         StringBuffer buffer;
         PrettyWriter<StringBuffer> writer(buffer);
-    //        Why is this needed?
+        //        Why is this needed?
         this->doc.Accept(writer);
         
         return buffer.GetString();
     }
     
     void process(){
-        processValue(doc, "Root", root);
+        processValue(doc, "Root", nullptr);
         
-        cout<< root->getPath()<< endl;
+        cout << generate_schemas() << endl;
+//        for (auto itr = this->tree.begin(); itr != this->tree.end(); ++itr) {
+//            cout <<itr->name << " -> " << itr->getSchemaName() << endl;
+//        }
+    }
+    
+    string generate_schemas(const string& model = "pydantic"){
+//        TODO: Later modify to accept other templates
+        string result = "from typing import Union\nfrom pydantic import BaseModel\n";
         
+        for (auto it = tree.rbegin(); it != tree.rend(); ++it) {
+            if (it->type == FCItemType::Object){
+                result += "\nclass " + it->getSchemaName() + "(BaseModel):\n";
+                
+                for (const auto& v : it->children) {
+                    result += "    " + v->name + ": " + v->getSchemaName() + "\n";
+                }
+            }
+        }
+        return result;
     }
     
 
