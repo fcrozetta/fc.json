@@ -59,7 +59,7 @@ jobs:
     needs: build-macos
     steps:
       - id: echoUrl
-        run: echo "->${{steps.create_release.outputs.upload_url}}<-"
+        run: echo "->${{github.event.release.upload_url}}<-"
 
       - name: Download macOS Artifacts
         uses: actions/download-artifact@v4
@@ -72,7 +72,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./artifacts/fc.json_macos_universal
           asset_name: "fc.json_macos_universal"
           asset_content_type: application/octet-stream
