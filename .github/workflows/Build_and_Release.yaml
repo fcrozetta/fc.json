@@ -35,7 +35,7 @@ jobs:
           make macos
 
       - name: Upload macOS Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: fc.json_macos_universal
           path: ./
@@ -59,7 +59,7 @@ jobs:
           make linux
 
       - name: Upload Linux Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: fc.json_linux
           path: ./
@@ -81,7 +81,7 @@ jobs:
           make windows
 
       - name: Upload Windows Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: fc.json_windows
           path: ./
