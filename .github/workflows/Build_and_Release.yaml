@@ -24,7 +24,7 @@ jobs:
         run: |
           # Install dependencies needed for your project
           # e.g., brew install or similar based on your project's needs
-          brew install gcc lipo
+          brew install gcc lzip lipo
 
       - name: Build for macOS ${{ matrix.arch }}
         run: |
@@ -40,48 +40,48 @@ jobs:
           name: fc.json_macos_universal
           path: ./
 
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # build-linux:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential
-          # Additional dependencies specific to your project
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y build-essential
+  #         # Additional dependencies specific to your project
 
-      - name: Build for Linux
-        run: |
-          # Run your Linux build commands here
-          make  # or cmake, adapt based on your project
-          make linux
+  #     - name: Build for Linux
+  #       run: |
+  #         # Run your Linux build commands here
+  #         make  # or cmake, adapt based on your project
+  #         make linux
 
-      - name: Upload Linux Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fc.json_linux
-          path: ./
+  #     - name: Upload Linux Build Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: fc.json_linux
+  #         path: ./
 
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # build-windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: |
-          # Use choco or any required installation commands for dependencies
+  #     - name: Install dependencies
+  #       run: |
+  #         # Use choco or any required installation commands for dependencies
 
-      - name: Build for Windows 64-bit
-        run: |
-          # Run Windows-specific build commands
-          make  # or cmake
-          make windows
+  #     - name: Build for Windows 64-bit
+  #       run: |
+  #         # Run Windows-specific build commands
+  #         make  # or cmake
+  #         make windows
 
-      - name: Upload Windows Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fc.json_windows
-          path: ./
+  #     - name: Upload Windows Build Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: fc.json_windows
+  #         path: ./
