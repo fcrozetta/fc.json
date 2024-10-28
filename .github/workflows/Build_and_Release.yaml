@@ -6,10 +6,10 @@ on:
   push:
     tags:
       - "*.*.*" # Trigger on version tags like v1.0.0
-
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: deploy
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
@@ -33,6 +33,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
+    environment: deploy
     needs: release
     steps:
       - name: Checkout code
