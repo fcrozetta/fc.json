@@ -30,8 +30,8 @@ macos: $(OUTPUT_DIR)
 		echo "Building for $$arch"; \
 		$(CXX) $(CXXFLAGS) -target $$arch-apple-macos11 $(SRC) -o $(OUTPUT_DIR)/$(BIN)_macos_$$arch; \
 	done
-	lipo -create -output $(OUTPUT_DIR)/$(BIN)_macos_universal $(OUTPUT_DIR)/$(BIN)_macos_x86_64 $(OUTPUT_DIR)/$(BIN)_macos_arm64
-	@echo "Built macOS universal binary: $(OUTPUT_DIR)/$(BIN)_macos_universal"
+	lipo -create -output $(OUTPUT_DIR)/$(BIN) $(OUTPUT_DIR)/$(BIN)_macos_x86_64 $(OUTPUT_DIR)/$(BIN)_macos_arm64
+	@echo "Built macOS universal binary: $(OUTPUT_DIR)/$(BIN)"
 
 # Linux target
 linux:
