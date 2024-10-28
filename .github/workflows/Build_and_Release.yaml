@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fc.json_macos_universal
-          path: ./
+          path: output/
 
   # build-linux:
   #   runs-on: ubuntu-latest
