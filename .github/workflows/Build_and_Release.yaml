@@ -74,10 +74,13 @@ jobs:
           cp output/fc-json output/fc-json-pkg/usr/local/bin/
       
       - name: print vars
+        env:
+          RELEASE_TAG:
         run: |
           echo "1 ${{ needs.vars.outputs.RELEASE_TAG }}"
           echo "2 $RELEASE_TAG"
           echo "3 ${{ env.RELEASE_TAG }}"
+          echo "4 ${GITHUB_REF##*/}"
 
       - name: Package CLI as .pkg for Notarization
         run: |
