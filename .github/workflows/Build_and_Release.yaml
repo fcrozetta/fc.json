@@ -94,7 +94,16 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun notarytool submit output/fc-json.pkg --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait
+          xcrun notarytool submit output/fc-json.pkg --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
+          cat notarization_result.json
+        continue-on-error: true
+
+      - name: Extract RequestUUID
+        id: extract-uuid
+        if: always()
+        run: |
+          REQUEST_UUID=$(jq -r '.id' notarization_result.json)
+          echo "RequestUUID=$REQUEST_UUID" >> $GITHUB_ENV
 
       - name: Fetch Notarization Log
         if: always()
@@ -102,7 +111,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun notarytool log ${{ steps.notarize.outputs.RequestUUID }} --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          xcrun notarytool log ${{ env.RequestUUID }} --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
 
       - name: Staple Notarization Ticket
         run: |
