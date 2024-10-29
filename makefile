@@ -31,6 +31,7 @@ macos: $(OUTPUT_DIR)
 		$(CXX) $(CXXFLAGS) -target $$arch-apple-macos11 $(SRC) -o $(OUTPUT_DIR)/$(BIN)_macos_$$arch; \
 	done
 	lipo -create -output $(OUTPUT_DIR)/$(BIN) $(OUTPUT_DIR)/$(BIN)_macos_x86_64 $(OUTPUT_DIR)/$(BIN)_macos_arm64
+	chmod -R 755 $(OUTPUT_DIR)/$(BIN)
 	@echo "Built macOS universal binary: $(OUTPUT_DIR)/$(BIN)"
 
 # Linux target
