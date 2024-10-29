@@ -80,7 +80,7 @@ jobs:
       - name: Zip CLI Binary for Notarization
         run: |
           cd output
-          zip -r fc-json.zip fc-json-pkg
+          zip -r fc-json.zip fc-json
           cd ..
 
       - name: Decode App Store Connect API Key
@@ -124,5 +124,5 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: output/fc-json.zip
-          asset_name: "fc-json_macos_signed"
+          asset_name: "fc-json_macos.zip"
           asset_content_type: application/octet-stream
