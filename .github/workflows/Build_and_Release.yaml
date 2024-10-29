@@ -72,16 +72,17 @@ jobs:
         run: |
           mkdir -p output/fc-json-pkg/usr/local/bin
           cp output/fc-json output/fc-json-pkg/usr/local/bin/
-
+          - name: print vars
+          run: |
+            echo "1 ${{ needs.vars.outputs.RELEASE_TAG }}"
+            echo "2 $RELEASE_TAG"
+            echo "3 ${{ env.RELEASE_TAG }}"
+            
       - name: Package CLI as .pkg for Notarization
         run: |
           pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${{ needs.release.outputs.RELEASE_TAG }} output/fc-json.pkg
 
-      - name: print vars
-        run: |
-          echo "1 ${{ needs.vars.outputs.RELEASE_TAG }}"
-          echo "2 $RELEASE_TAG"
-          echo "3 ${{ env.RELEASE_TAG }}"
+      
       - name: Zip CLI Binary for Notarization
         run: |
           cd output
