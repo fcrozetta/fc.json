@@ -67,9 +67,14 @@ jobs:
       - name: Verify Code Signature
         run: codesign --verify --verbose=4 output/fc-json
 
+      - name: Prepare Directory for Packaging
+        run: |
+          mkdir -p output/fc-json-pkg/usr/local/bin
+          cp output/fc-json output/fc-json-pkg/usr/local/bin/
+
       - name: Package CLI as .pkg for Notarization
         run: |
-          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output --version 1.0 output/fc-json.pkg
+          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version 1.0 output/fc-json.pkg
 
       - name: Zip CLI Binary for Notarization
         run: |
