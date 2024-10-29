@@ -75,6 +75,14 @@ jobs:
         run: |
           pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${GITHUB_REF##*/} output/fc-json.pkg
 
+          - name: Sign the Package
+          env:
+            DEVELOPER_ID_INSTALLER: "Developer ID Installer: Fernando Crozetta (W9XMAAY8XN)"
+          run: |
+            productsign --sign "$DEVELOPER_ID_INSTALLER" output/fc-json-unsigned.pkg output/fc-json.pkg
+  
+      - name: Verify Package Signature
+        run: pkgutil --check-signature output/fc-json.pkg
       
       - name: Zip CLI Binary for Notarization
         run: |
