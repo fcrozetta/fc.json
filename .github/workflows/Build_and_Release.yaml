@@ -69,7 +69,7 @@ jobs:
 
       - name: Package CLI as .pkg for Notarization
         run: |
-          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json --version 1.0 output/fc-json.pkg
+          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output --version 1.0 output/fc-json.pkg
 
       - name: Zip CLI Binary for Notarization
         run: |
