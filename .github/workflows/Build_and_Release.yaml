@@ -96,10 +96,13 @@ jobs:
         run: |
           xcrun notarytool submit output/fc-json.pkg --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait
 
-      # - name: Wait for Notarization
-      #   run: |
-      #     sleep 60  # Wait for Apple to process
-      #     xcrun altool --notarization-info "$REQUEST_UUID" -u "$APPLE_ID" -p "$APPLE_APP_SPECIFIC_PASSWORD"
+      - name: Fetch Notarization Log
+        if: always()
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          xcrun notarytool log ${{ steps.notarize.outputs.RequestUUID }} --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
 
       - name: Staple Notarization Ticket
         run: |
