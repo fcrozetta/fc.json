@@ -70,7 +70,7 @@ jobs:
         run: |
           mkdir -p output/fc-json-pkg/usr/local/bin
           cp output/fc-json output/fc-json-pkg/usr/local/bin/
-          chmod -R 755 output/
+          chmod -R 777 output/
 
       - name: Package CLI as .pkg for Notarization
         run: |
@@ -115,7 +115,7 @@ jobs:
 
       - name: Staple Notarization Ticket
         run: |
-          xcrun stapler staple output/fc-json
+          xcrun stapler staple -v output/fc-json
 
       - name: Upload macOS CLI Binary as Release Asset
         uses: actions/upload-release-asset@v1
