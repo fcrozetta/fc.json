@@ -44,7 +44,6 @@ jobs:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
         run: |
-          echo "$MACOS_CERTIFICATE";
           echo "$MACOS_CERTIFICATE" | base64 --decode > macos_cert.p12
           security create-keychain -p "password" build.keychain
           security import macos_cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
@@ -64,18 +63,6 @@ jobs:
         run: |
           codesign --force --sign "$CODE_SIGN_IDENTITY" --options runtime output/fc-json
           codesign --verify --verbose=4 output/fc-json
-
-
-      - name: Prepare Directory for Packaging
-        run: |
-          mkdir -p output/fc-json-pkg/usr/local/bin
-          cp output/fc-json output/fc-json-pkg/usr/local/bin/
-          chmod -R 777 output/
-
-      # - name: Package CLI as .pkg for Notarization
-      #   run: |
-      #     pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${GITHUB_REF##*/} output/fc-json.pkg
-
       
       - name: Zip CLI Binary for Notarization
         run: |
@@ -113,10 +100,6 @@ jobs:
         run: |
           xcrun notarytool log ${{ env.RequestUUID }} --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
 
-      # - name: Staple Notarization Ticket
-      #   run: |
-      #     xcrun stapler staple -v output/fc-json
-
       - name: Upload macOS CLI Binary as Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -124,5 +107,5 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: output/fc-json.zip
-          asset_name: "fc-json_macos.zip"
+          asset_name: "fc-json-macos.zip"
           asset_content_type: application/octet-stream
