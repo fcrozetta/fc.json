@@ -28,40 +28,40 @@ int main(int argc, const char * argv[]) {
         .store_into(filename);
     
     bool pretty = false;
-    parser.add_argument("-p","--pretty")
-        .help("pretty print the json")
-        .flag()
-        .store_into(pretty);
+    // parser.add_argument("-p","--pretty")
+    //     .help("pretty print the json")
+    //     .flag()
+    //     .store_into(pretty);
     
 //    TODO: Implement this functionality
     string diff;
-    parser.add_argument("--diff")
-        .help("Compare input with diff filename.")
-        .store_into(diff);
+    // parser.add_argument("--diff")
+    //     .help("Compare input with diff filename.")
+    //     .store_into(diff);
     
     bool redact = false;
-    parser.add_argument("--redact")
-        .help("Print the json redacting all the fields, and adding an example based on the type of the field")
-        .flag()
-        .store_into(redact);
+    // parser.add_argument("--redact")
+    //     .help("Print the json redacting all the fields, and adding an example based on the type of the field")
+    //     .flag()
+    //     .store_into(redact);
     
     bool schema = false;
-    parser.add_argument("-s","--schema")
-        .help("modify output to schema instead of json")
-        .flag()
-        .store_into(schema);
+    // parser.add_argument("-s","--schema")
+    //     .help("modify output to schema instead of json")
+    //     .flag()
+    //     .store_into(schema);
     
     bool pydantic = false;
-    parser.add_argument("--pydantic")
-        .help("create pydantic classes based on the json file")
-        .flag()
-        .store_into(pydantic);
+    // parser.add_argument("--pydantic")
+    //     .help("create pydantic classes based on the json file")
+    //     .flag()
+    //     .store_into(pydantic);
     
     bool table = false;
-    parser.add_argument("-t","--table")
-        .help("print as table")
-        .flag()
-        .store_into(table);
+    // parser.add_argument("-t","--table")
+    //     .help("print as table")
+    //     .flag()
+    //     .store_into(table);
     
 //    Parser loading varables here
     try {
