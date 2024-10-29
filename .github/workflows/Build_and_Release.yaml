@@ -39,6 +39,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install Xcode Command Line Tools
+        run: |
+          xcode-select --install || echo "Command Line Tools already installed"
+
       - name: Decode and Import .p12 Certificate
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
