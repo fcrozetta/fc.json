@@ -19,7 +19,7 @@ using namespace std;
 
 
 int main(int argc, const char * argv[]) {
-    argparse::ArgumentParser parser("fc.json");
+    argparse::ArgumentParser parser("fc.json","{{VERSION}}");
     parser.add_description("This Application is used to perform different tasks on a given json file.");
     
     string filename;
