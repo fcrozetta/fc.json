@@ -57,7 +57,7 @@ jobs:
       - name: add version in CLI
         run: |
           TAG=${GITHUB_REF##*/}  
-          sed -i "s/{{VERSION}}/$TAG/g" fc.json/main.cpp
+          sed -i '' -e "s/{{VERSION}}/$TAG/g" fc.json/main.cpp
 
       - name: Build macOS CLI Binary
         run: make clean; make macos # Assuming the Makefile is set up for macOS amd64
