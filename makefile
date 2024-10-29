@@ -6,7 +6,7 @@ LDFLAGS =
 # Define source files and output binary name
 SRC = $(wildcard fc.json/*.cpp)
 OUTPUT_DIR = output
-BIN = fc.json
+BIN = fc-json
 
 # macOS universal binary configuration
 MACOS_ARCHS = x86_64 arm64
