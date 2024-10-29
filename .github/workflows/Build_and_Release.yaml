@@ -39,10 +39,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Xcode Command Line Tools
-        run: |
-          xcode-select --install || echo "Command Line Tools already installed"
-
       - name: Decode and Import .p12 Certificate
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -74,19 +70,12 @@ jobs:
         run: |
           mkdir -p output/fc-json-pkg/usr/local/bin
           cp output/fc-json output/fc-json-pkg/usr/local/bin/
+          chmod -R 755 output/
 
       - name: Package CLI as .pkg for Notarization
         run: |
           pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${GITHUB_REF##*/} output/fc-json.pkg
 
-          - name: Sign the Package
-          env:
-            DEVELOPER_ID_INSTALLER: "Developer ID Installer: Fernando Crozetta (W9XMAAY8XN)"
-          run: |
-            productsign --sign "$DEVELOPER_ID_INSTALLER" output/fc-json-unsigned.pkg output/fc-json.pkg
-  
-      - name: Verify Package Signature
-        run: pkgutil --check-signature output/fc-json.pkg
       
       - name: Zip CLI Binary for Notarization
         run: |
@@ -105,7 +94,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun notarytool submit output/fc-json.pkg --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
+          xcrun notarytool submit output/fc-json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
           cat notarization_result.json
         continue-on-error: true
 
@@ -126,7 +115,7 @@ jobs:
 
       - name: Staple Notarization Ticket
         run: |
-          xcrun stapler staple -v output/fc-json.pkg
+          xcrun stapler staple output
 
       - name: Upload macOS CLI Binary as Release Asset
         uses: actions/upload-release-asset@v1
