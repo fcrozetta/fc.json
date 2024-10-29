@@ -56,16 +56,15 @@ jobs:
         run: brew install gcc
 
       - name: Build macOS CLI Binary
-        run: make macos # Assuming the Makefile is set up for macOS amd64
+        run: make clean; make macos # Assuming the Makefile is set up for macOS amd64
 
       - name: Code Sign CLI Binary
         env:
           CODE_SIGN_IDENTITY: "Developer ID Application: Fernando Crozetta (W9XMAAY8XN)"
         run: |
           codesign --force --sign "$CODE_SIGN_IDENTITY" --options runtime output/fc-json
+          codesign --verify --verbose=4 output/fc-json
 
-      - name: Verify Code Signature
-        run: codesign --verify --verbose=4 output/fc-json
 
       - name: Prepare Directory for Packaging
         run: |
@@ -80,7 +79,7 @@ jobs:
       - name: Zip CLI Binary for Notarization
         run: |
           cd output
-          zip -r fc-json.zip fc-json
+          zip -r fc-json.zip fc-json-pkg
           cd ..
 
       - name: Decode App Store Connect API Key
@@ -94,7 +93,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun notarytool submit output/fc-json.pkg --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
+          xcrun notarytool submit output/fc-json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
           cat notarization_result.json
         continue-on-error: true
 
