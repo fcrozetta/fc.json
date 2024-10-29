@@ -72,9 +72,9 @@ jobs:
           cp output/fc-json output/fc-json-pkg/usr/local/bin/
           chmod -R 777 output/
 
-      - name: Package CLI as .pkg for Notarization
-        run: |
-          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${GITHUB_REF##*/} output/fc-json.pkg
+      # - name: Package CLI as .pkg for Notarization
+      #   run: |
+      #     pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${GITHUB_REF##*/} output/fc-json.pkg
 
       
       - name: Zip CLI Binary for Notarization
@@ -113,9 +113,9 @@ jobs:
         run: |
           xcrun notarytool log ${{ env.RequestUUID }} --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
 
-      - name: Staple Notarization Ticket
-        run: |
-          xcrun stapler staple -v output/fc-json
+      # - name: Staple Notarization Ticket
+      #   run: |
+      #     xcrun stapler staple -v output/fc-json
 
       - name: Upload macOS CLI Binary as Release Asset
         uses: actions/upload-release-asset@v1
@@ -123,6 +123,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: output/fc-json.pkg
+          asset_path: output/fc-json.zip
           asset_name: "fc-json_macos_signed"
           asset_content_type: application/octet-stream
