@@ -114,7 +114,7 @@ jobs:
 
       - name: Staple Notarization Ticket
         run: |
-          xcrun stapler staple output/fc-json.pkg
+          xcrun stapler staple output/fc-json.zip
 
       - name: Upload macOS CLI Binary as Release Asset
         uses: actions/upload-release-asset@v1
