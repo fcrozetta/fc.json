@@ -93,7 +93,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun notarytool submit output/fc-json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
+          xcrun notarytool submit output/fc-json.pkg --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
           cat notarization_result.json
         continue-on-error: true
 
@@ -114,7 +114,7 @@ jobs:
 
       - name: Staple Notarization Ticket
         run: |
-          xcrun stapler staple -v output/fc-json
+          xcrun stapler staple -v output/fc-json.pkg
 
       - name: Upload macOS CLI Binary as Release Asset
         uses: actions/upload-release-asset@v1
