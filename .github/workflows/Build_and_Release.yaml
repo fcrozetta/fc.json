@@ -12,6 +12,7 @@ jobs:
     environment: Deploy
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      tag_name: ${{ steps.vars.outputs.tag_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -73,10 +74,8 @@ jobs:
           cp output/fc-json output/fc-json-pkg/usr/local/bin/
 
       - name: Package CLI as .pkg for Notarization
-        env:
-          RELEASE_TAG: ${{ env.RELEASE_TAG }}
         run: |
-          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version "$RELEASE_TAG" output/fc-json.pkg
+          pkgbuild --identifier "dev.fcrozetta.fc-json" --install-location /usr/local/bin --root output/fc-json-pkg --version ${{ needs.release.outputs.upload_url }} output/fc-json.pkg
 
       - name: Zip CLI Binary for Notarization
         run: |
