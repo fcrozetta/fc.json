@@ -14,11 +14,13 @@ find_package(argparse CONFIG REQUIRED)   # target: argparse::argparse
 add_library(fc-json-core STATIC
   fc.json/parse/parser.cpp
   fc.json/schema/infer.cpp
+  fc.json/render/pydantic.cpp
 )
 target_include_directories(fc-json-core PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
 
+# The executable no longer touches rapidjson — it is fully behind the core
+# library's parse adapter, so no rapidjson include here. See ADR 0001.
 add_executable(fc-json fc.json/main.cpp)
-target_include_directories(fc-json PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
 target_link_libraries(fc-json PRIVATE argparse::argparse fc-json-core)
 
 # Tests
@@ -28,6 +30,7 @@ add_executable(fc-json-tests
   fc.json/tests/test_main.cpp
   fc.json/tests/test_parser.cpp
   fc.json/tests/test_infer.cpp
+  fc.json/tests/test_render.cpp
 )
 target_link_libraries(fc-json-tests PRIVATE doctest::doctest fc-json-core)
 add_test(NAME fc-json-tests COMMAND fc-json-tests)

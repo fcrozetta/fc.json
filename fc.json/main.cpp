@@ -5,86 +5,56 @@
 //  Created by Fernando Crozetta on 21/10/2024.
 //
 
+#include <fstream>
 #include <iostream>
-
+#include <sstream>
+#include <string>
 
 #include <argparse/argparse.hpp>
-#include <rapidjson/document.h>
 
+#include "parse/parser.hpp"
+#include "schema/infer.hpp"
+#include "render/pydantic.hpp"
 
-#include "utils/processjson.hpp"
+namespace {
 
-using namespace std;
+std::string readFile(const std::string& path) {
+    std::ifstream file(path);
+    if (!file) {
+        throw std::runtime_error("could not open file: " + path);
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
 
+} // namespace
 
+int main(int argc, char* argv[]) {
+    argparse::ArgumentParser parser("fc.json", "{{VERSION}}");
+    parser.add_description(
+        "Inspect JSON and generate schemas, examples, and classes.");
 
-int main(int argc, const char * argv[]) {
-    argparse::ArgumentParser parser("fc.json","{{VERSION}}");
-    parser.add_description("This Application is used to perform different tasks on a given json file.");
-    
-    string filename;
+    std::string filename;
     parser.add_argument("input_filename")
-        .help("json filename to be processed")
+        .help("json file to process")
         .store_into(filename);
-    
-    bool pretty = false;
-    // parser.add_argument("-p","--pretty")
-    //     .help("pretty print the json")
-    //     .flag()
-    //     .store_into(pretty);
-    
-//    TODO: Implement this functionality
-    string diff;
-    // parser.add_argument("--diff")
-    //     .help("Compare input with diff filename.")
-    //     .store_into(diff);
-    
-    bool redact = false;
-    // parser.add_argument("--redact")
-    //     .help("Print the json redacting all the fields, and adding an example based on the type of the field")
-    //     .flag()
-    //     .store_into(redact);
-    
-    bool schema = false;
-    // parser.add_argument("-s","--schema")
-    //     .help("modify output to schema instead of json")
-    //     .flag()
-    //     .store_into(schema);
-    
-    bool pydantic = false;
-    // parser.add_argument("--pydantic")
-    //     .help("create pydantic classes based on the json file")
-    //     .flag()
-    //     .store_into(pydantic);
-    
-    bool table = false;
-    // parser.add_argument("-t","--table")
-    //     .help("print as table")
-    //     .flag()
-    //     .store_into(table);
-    
-//    Parser loading varables here
+
     try {
-        parser.parse_args(argc,argv);
+        parser.parse_args(argc, argv);
     } catch (const std::exception& err) {
-        std::cerr << err.what() << std::endl;
-        std::cerr <<parser;
-        std::exit(1);
+        std::cerr << err.what() << "\n" << parser;
+        return 1;
     }
-    
-    FCJson doc = FCJson(filename);
-    
-    if (redact){
-        doc.addAction("redact");
+
+    try {
+        const std::string text = readFile(filename);
+        const fc::SchemaModule schema = fc::inferSchema(fc::parse(text));
+        std::cout << fc::renderPydantic(schema);
+    } catch (const std::exception& err) {
+        std::cerr << "fc.json: " << err.what() << "\n";
+        return 1;
     }
-    if (table){
-        doc.addAction("table");
-    }
-    if (schema) {
-        doc.addAction("schema");
-    }
-    
-    doc.process();
-//    cout << doc.prettyPrint() <<endl;
+
     return 0;
 }
