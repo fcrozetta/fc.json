@@ -15,11 +15,13 @@
 #include <string>
 #include <functional>
 #include <typeinfo>
-#include "../include/rapidjson/prettywriter.h"
-#include "../include/rapidjson/stringbuffer.h"
-#include "../include/rapidjson/pointer.h"
-
-#include "schemaGenerator.hpp"
+#include <list>
+#include <vector>
+#include <algorithm>
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/pointer.h>
 
 using namespace std;
 using namespace rapidjson;

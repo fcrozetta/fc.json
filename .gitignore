@@ -1,6 +1,10 @@
 
 .DS_Store
 
+# CMake / vcpkg build output
+build/
+vcpkg_installed/
+
 # rctx: .rctx/ is committed source of truth. Keep the whole tree
 # tracked so a claim scope folder matching an ignore rule (build/, bin/,
 # out/, ...) can't be silently dropped. Must come after those rules.

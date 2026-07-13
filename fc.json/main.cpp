@@ -8,8 +8,8 @@
 #include <iostream>
 
 
-#include "include/argparse/argparse.hpp"
-#include "include/rapidjson/document.h"
+#include <argparse/argparse.hpp>
+#include <rapidjson/document.h>
 
 
 #include "utils/processjson.hpp"

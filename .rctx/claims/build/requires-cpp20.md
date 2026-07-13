@@ -1,22 +1,23 @@
 ---
 volatility: "stable"
 watches:
-  - "makefile"
-reverify: "grep -q 'c++20' makefile"
+  - "CMakeLists.txt"
+reverify: "grep -q 'CMAKE_CXX_STANDARD 20' CMakeLists.txt"
 ---
 
-The project requires a **C++20** toolchain. The `makefile` compiles with
-`-std=c++20`, and the code depends on C++20 features (e.g. `std::format` in the
-utils headers).
+The project requires a **C++20** toolchain. `CMakeLists.txt` sets
+`CMAKE_CXX_STANDARD 20` with `CMAKE_CXX_STANDARD_REQUIRED ON` and
+`CMAKE_CXX_EXTENSIONS OFF`, and the code depends on C++20 features.
 
 **Why it matters:** this is a hard floor, not a preference. An older compiler
-default (`-std=c++17` or a system `g++`/`clang++` that predates C++20) will fail
-to compile with errors that don't obviously point at the standard version. A
-contributor cloning the repo has no in-code signal of the minimum standard.
+or a lower standard will fail to compile with errors that don't obviously point
+at the standard version. A contributor cloning the repo has no in-code signal of
+the minimum standard.
 
-**Note:** the CI workflow builds via `make` on `macos-latest` after
-`brew install gcc`, so the effective compiler is Homebrew GCC. The `makefile`
-`CXX = g++` therefore resolves to that GCC, not Apple Clang.
+**Build note:** the build is CMake + vcpkg (see ADR 0002). Locally the compiler
+resolves to AppleClang; CI builds under its own toolchain. Either way the
+standard floor is enforced by CMake, not by a compiler flag in a makefile — the
+old `makefile` (which set `-std=c++20`) has been retired.
 
 **If this changes:** bumping the standard (e.g. to C++23) will trip this claim's
 drift check — update the `reverify` grep and this prose to the new floor.
