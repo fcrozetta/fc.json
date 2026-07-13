@@ -13,6 +13,7 @@ find_package(argparse CONFIG REQUIRED)   # target: argparse::argparse
 # is a PRIVATE include of the core and never leaks to consumers. See ADR 0001.
 add_library(fc-json-core STATIC
   fc.json/parse/parser.cpp
+  fc.json/schema/infer.cpp
 )
 target_include_directories(fc-json-core PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
 
@@ -23,6 +24,10 @@ target_link_libraries(fc-json PRIVATE argparse::argparse fc-json-core)
 # Tests
 enable_testing()
 find_package(doctest CONFIG REQUIRED)
-add_executable(fc-json-tests fc.json/tests/test_parser.cpp)
+add_executable(fc-json-tests
+  fc.json/tests/test_main.cpp
+  fc.json/tests/test_parser.cpp
+  fc.json/tests/test_infer.cpp
+)
 target_link_libraries(fc-json-tests PRIVATE doctest::doctest fc-json-core)
 add_test(NAME fc-json-tests COMMAND fc-json-tests)

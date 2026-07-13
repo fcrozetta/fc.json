@@ -95,8 +95,17 @@ class Tree { std::vector<Node> nodes; NodeId root; };
 
 ### Object naming
 
-- **Key-based, with structural dedup.** An object under key `address` →
-  `Address`; two structurally identical objects → one class.
+- **Name-first.** Each object schema is named from its context: the field key
+  (`address` → `Address`), or for array elements the singularized array key.
+  Distinct name-hints produce distinct schemas **even if their shapes are
+  currently identical** — `billing` and `shipping` stay separate classes,
+  because they are semantically distinct and will drift. (Superseded the
+  earlier "collapse any structurally identical objects" wording, which was
+  lossy; decided 2026-07-13.)
+- **Dedup only on same-name-same-shape.** A name-hint recurring with an
+  identical shape collapses to one schema — this is the "10 elements of one
+  array → one `Item` class" case. A name-hint recurring with a *different*
+  shape is disambiguated with a numeric suffix.
 - **Array elements have no key.** An object that is an array element is named
   after the array's key, singularized: if the key ends in `s`, drop it
   (`users` → `User`); otherwise append `Item` (`a` → `AItem`). Deduped by shape.
