@@ -91,8 +91,11 @@ These are rules, not suggestions. Deviations need a reason in the PR.
 
 ## Tooling (match the Python toolchain's discipline)
 
-- **Build**: CMake is the source of truth. The Xcode project is a local-dev
-  convenience, not the authoritative build. CI builds via CMake/make.
+- **Build**: CMake is the source of truth. The Xcode project, if kept, is
+  generated via `cmake -G Xcode` — never hand-maintained. CI builds via CMake.
+- **Dependencies**: vcpkg in manifest mode (`vcpkg.json`, pinned baseline). No
+  vendored third-party source trees in the repo. Includes are system-style
+  (`#include <rapidjson/...>`). See ADR 0002.
 - **Format**: `.clang-format` committed; code conforms. Enforced in CI
   (`clang-format --dry-run --Werror`).
 - **Lint**: `.clang-tidy` committed; run in CI.
