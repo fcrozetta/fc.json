@@ -51,27 +51,47 @@ jobs:
           security unlock-keychain -p "password" build.keychain
           security set-key-partition-list -S apple-tool:,apple: -s -k "password" build.keychain
 
-      - name: Install dependencies
-        run: brew install gcc
+      # Pin vcpkg to the exact baseline in vcpkg.json so the manifest resolves
+      # deterministically (no unshallow/fetch dance).
+      - name: Set up vcpkg
+        run: |
+          BASELINE=$(jq -r '."builtin-baseline"' vcpkg.json)
+          git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
+          git -C "$RUNNER_TEMP/vcpkg" checkout "$BASELINE"
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+          echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> $GITHUB_ENV
+
+      # Cache the built dependency archives. Keyed on vcpkg.json so it busts
+      # when deps or baseline change.
+      - name: Cache vcpkg archives
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
 
       - name: add version in CLI
         run: |
-          TAG=${GITHUB_REF##*/}  
+          TAG=${GITHUB_REF##*/}
           sed -i '' -e "s/{{VERSION}}/$TAG/g" fc.json/main.cpp
 
-      - name: Build macOS CLI Binary
-        run: make clean; make macos # Assuming the Makefile is set up for macOS amd64
+      # Both deps are header-only, so a universal binary is just a matter of
+      # compiling our own code for both arches — no per-triplet vcpkg juggling.
+      - name: Build macOS CLI Binary (universal)
+        run: |
+          cmake --preset default -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          cmake --build build
+          lipo -info build/fc-json
 
       - name: Code Sign CLI Binary
         env:
           CODE_SIGN_IDENTITY: "Developer ID Application: Fernando Crozetta (W9XMAAY8XN)"
         run: |
-          codesign --force --sign "$CODE_SIGN_IDENTITY" --options runtime output/fc-json
-          codesign --verify --verbose=4 output/fc-json
-      
+          codesign --force --sign "$CODE_SIGN_IDENTITY" --options runtime build/fc-json
+          codesign --verify --verbose=4 build/fc-json
+
       - name: Zip CLI Binary for Notarization
         run: |
-          cd output
+          cd build
           zip -r fc-json.zip fc-json
           cd ..
 
@@ -86,7 +106,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
-          xcrun notarytool submit output/fc-json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
+          xcrun notarytool submit build/fc-json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
           cat notarization_result.json
         continue-on-error: true
 
@@ -111,6 +131,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: output/fc-json.zip
+          asset_path: build/fc-json.zip
           asset_name: "fc-json-macos.zip"
           asset_content_type: application/octet-stream
