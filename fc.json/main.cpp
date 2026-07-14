@@ -15,6 +15,7 @@
 #include "parse/parser.hpp"
 #include "schema/infer.hpp"
 #include "render/pydantic.hpp"
+#include "render/jsonschema.hpp"
 
 namespace {
 
@@ -40,6 +41,12 @@ int main(int argc, char* argv[]) {
         .help("json file to process")
         .store_into(filename);
 
+    std::string format;
+    parser.add_argument("-f", "--format")
+        .help("output format: pydantic (default) or json-schema")
+        .default_value(std::string("pydantic"))
+        .store_into(format);
+
     try {
         parser.parse_args(argc, argv);
     } catch (const std::exception& err) {
@@ -47,10 +54,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Validated here rather than via argparse .choices() so a bad value gets a
+    // clear message instead of argparse's misleading positional-count error.
+    if (format != "pydantic" && format != "json-schema") {
+        std::cerr << "fc.json: unknown format '" << format
+                  << "' (expected: pydantic, json-schema)\n";
+        return 1;
+    }
+
     try {
         const std::string text = readFile(filename);
         const fc::SchemaModule schema = fc::inferSchema(fc::parse(text));
-        std::cout << fc::renderPydantic(schema);
+        std::cout << (format == "json-schema" ? fc::renderJsonSchema(schema)
+                                              : fc::renderPydantic(schema));
     } catch (const std::exception& err) {
         std::cerr << "fc.json: " << err.what() << "\n";
         return 1;
