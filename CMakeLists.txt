@@ -15,6 +15,7 @@ add_library(fc-json-core STATIC
   fc.json/parse/parser.cpp
   fc.json/schema/infer.cpp
   fc.json/render/pydantic.cpp
+  fc.json/render/jsonschema.cpp
 )
 target_include_directories(fc-json-core PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
 
@@ -31,6 +32,7 @@ add_executable(fc-json-tests
   fc.json/tests/test_parser.cpp
   fc.json/tests/test_infer.cpp
   fc.json/tests/test_render.cpp
+  fc.json/tests/test_jsonschema.cpp
 )
 target_link_libraries(fc-json-tests PRIVATE doctest::doctest fc-json-core)
 add_test(NAME fc-json-tests COMMAND fc-json-tests)
