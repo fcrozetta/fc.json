@@ -16,6 +16,7 @@
 #include "schema/infer.hpp"
 #include "render/pydantic.hpp"
 #include "render/jsonschema.hpp"
+#include "render/document.hpp"
 
 namespace {
 
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]) {
 
     std::string format;
     parser.add_argument("-f", "--format")
-        .help("output format: pydantic (default) or json-schema")
+        .help("output format: pydantic (default), json-schema, example, redact")
         .default_value(std::string("pydantic"))
         .store_into(format);
 
@@ -56,17 +57,28 @@ int main(int argc, char* argv[]) {
 
     // Validated here rather than via argparse .choices() so a bad value gets a
     // clear message instead of argparse's misleading positional-count error.
-    if (format != "pydantic" && format != "json-schema") {
+    if (format != "pydantic" && format != "json-schema" &&
+        format != "example" && format != "redact") {
         std::cerr << "fc.json: unknown format '" << format
-                  << "' (expected: pydantic, json-schema)\n";
+                  << "' (expected: pydantic, json-schema, example, redact)\n";
         return 1;
     }
 
     try {
         const std::string text = readFile(filename);
-        const fc::SchemaModule schema = fc::inferSchema(fc::parse(text));
-        std::cout << (format == "json-schema" ? fc::renderJsonSchema(schema)
-                                              : fc::renderPydantic(schema));
+        const fc::Tree tree = fc::parse(text);
+
+        std::string output;
+        if (format == "example") {
+            output = fc::renderExample(tree);
+        } else if (format == "redact") {
+            output = fc::renderRedacted(tree);
+        } else {
+            const fc::SchemaModule schema = fc::inferSchema(tree);
+            output = (format == "json-schema") ? fc::renderJsonSchema(schema)
+                                               : fc::renderPydantic(schema);
+        }
+        std::cout << output;
     } catch (const std::exception& err) {
         std::cerr << "fc.json: " << err.what() << "\n";
         return 1;
