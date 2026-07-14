@@ -3,35 +3,10 @@
 #include <string>
 #include <vector>
 
+#include "json_util.hpp"
+
 namespace fc {
 namespace {
-
-// A JSON string literal for an arbitrary key/value. Escapes per JSON rules;
-// control characters below 0x20 use \u00XX.
-std::string jsonString(const std::string& s) {
-    static const char* hex = "0123456789abcdef";
-    std::string out = "\"";
-    for (unsigned char c : s) {
-        switch (c) {
-            case '"':  out += "\\\""; break;
-            case '\\': out += "\\\\"; break;
-            case '\n': out += "\\n"; break;
-            case '\r': out += "\\r"; break;
-            case '\t': out += "\\t"; break;
-            case '\b': out += "\\b"; break;
-            case '\f': out += "\\f"; break;
-            default:
-                if (c < 0x20) {
-                    out += "\\u00";
-                    out += hex[(c >> 4) & 0xF];
-                    out += hex[c & 0xF];
-                } else {
-                    out += static_cast<char>(c); // UTF-8 bytes pass through
-                }
-        }
-    }
-    return out + "\"";
-}
 
 class JsonSchemaRenderer {
 public:
