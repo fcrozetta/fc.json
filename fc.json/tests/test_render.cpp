@@ -66,3 +66,32 @@ TEST_CASE("top-level array emits a Root alias, not a class") {
     CHECK(contains(out, "class RootItem(BaseModel):"));
     CHECK(contains(out, "Root = list[RootItem]"));
 }
+
+// --- edge cases surfaced by review (Codex P2) ---
+
+TEST_CASE("alias string is escaped (C1)") {
+    // Key contains a double quote; the alias literal must stay valid Python.
+    std::string out = py("{\"a\\\"b\":1}");
+    CHECK(contains(out, R"(alias="a\"b")"));
+    CHECK_FALSE(contains(out, R"(alias="a"b")"));
+}
+
+TEST_CASE("colliding sanitized identifiers are disambiguated (C2)") {
+    std::string out = py(R"({"a-b":1,"a_b":2})");
+    CHECK(contains(out, "a_b: int"));
+    CHECK(contains(out, "a_b2: int")); // second key kept, not dropped
+}
+
+TEST_CASE("digit- and underscore-leading keys avoid private names (C3)") {
+    CHECK(contains(py(R"({"1st":"x"})"), R"(field_1st: str = Field(alias="1st"))"));
+    CHECK(contains(py(R"({"_id":1})"), R"(field__id: int = Field(alias="_id"))"));
+    CHECK(contains(py(R"({"__typename":"T"})"),
+                   R"(field___typename: str = Field(alias="__typename"))"));
+}
+
+TEST_CASE("class names that collide with keywords are guarded (C4)") {
+    std::string out = py(R"({"none":{"x":1}})");
+    CHECK(contains(out, "class None_(BaseModel):"));
+    CHECK(contains(out, "none: None_"));
+    CHECK_FALSE(contains(out, "class None(BaseModel):"));
+}

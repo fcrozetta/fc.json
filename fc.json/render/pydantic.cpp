@@ -19,20 +19,59 @@ const std::unordered_set<std::string>& pythonKeywords() {
     return kw;
 }
 
-// Turn a raw JSON key into a valid Python identifier. Non-alphanumerics become
-// '_', a leading digit is prefixed, and keywords are suffixed. When the result
-// differs from the key, the caller emits a Field(alias=...) to keep the wire
-// name.
+// Turn a raw JSON key into a valid, Pydantic-usable Python identifier. When the
+// result differs from the key, the caller emits Field(alias=...) to keep the
+// wire name.
 std::string sanitizeIdent(const std::string& key) {
     std::string out;
     out.reserve(key.size());
     for (unsigned char c : key) {
         out += std::isalnum(c) ? static_cast<char>(c) : '_';
     }
-    if (out.empty()) out = "_";
-    if (std::isdigit(static_cast<unsigned char>(out[0]))) out = "_" + out;
+    // Pydantic rejects leading-underscore names (treated as private attributes),
+    // and a leading digit is not a valid identifier. Prefix rather than mutate
+    // in place so the alias still carries the original key. Covers "1st", but
+    // also "_id" and "__typename".
+    if (out.empty() || out.front() == '_' ||
+        std::isdigit(static_cast<unsigned char>(out.front()))) {
+        out = "field_" + out;
+    }
     if (pythonKeywords().count(out)) out += "_";
     return out;
+}
+
+// Guard a structural class name against Python keywords/constants (None, True,
+// False, ...). PascalCase already guarantees a valid, non-empty, non-digit
+// start, so a keyword clash is the only remaining illegality.
+std::string pyClassName(const std::string& name) {
+    if (pythonKeywords().count(name)) return name + "_";
+    return name;
+}
+
+// Emit a Python double-quoted string literal for an arbitrary key, escaping so
+// the generated source stays valid regardless of quotes, backslashes, or
+// control characters in the key.
+std::string pyStringLiteral(const std::string& s) {
+    static const char* hex = "0123456789abcdef";
+    std::string out = "\"";
+    for (unsigned char c : s) {
+        switch (c) {
+            case '\\': out += "\\\\"; break;
+            case '"':  out += "\\\""; break;
+            case '\n': out += "\\n"; break;
+            case '\r': out += "\\r"; break;
+            case '\t': out += "\\t"; break;
+            default:
+                if (c < 0x20) {
+                    out += "\\x";
+                    out += hex[(c >> 4) & 0xF];
+                    out += hex[c & 0xF];
+                } else {
+                    out += static_cast<char>(c); // UTF-8 bytes pass through
+                }
+        }
+    }
+    return out + "\"";
 }
 
 class PyRenderer {
@@ -42,11 +81,12 @@ public:
     std::string run() {
         std::string body;
         for (const Schema& s : mod_.schemas) {
-            body += "\nclass " + s.name + "(BaseModel):\n";
+            body += "\nclass " + pyClassName(s.name) + "(BaseModel):\n";
             if (s.fields.empty()) {
                 body += "    pass\n";
             } else {
-                for (const Field& f : s.fields) body += renderField(f);
+                std::unordered_set<std::string> used; // disambiguate per class
+                for (const Field& f : s.fields) body += renderField(f, used);
             }
         }
 
@@ -74,7 +114,7 @@ private:
             case TypeKind::Float:   return "float";
             case TypeKind::String:  return "str";
             case TypeKind::Unknown: usedAny_ = true; return "Any";
-            case TypeKind::Object:  return mod_.at(t.objectSchema).name;
+            case TypeKind::Object:  return pyClassName(mod_.at(t.objectSchema).name);
             case TypeKind::List:    return "list[" + renderType(t.args.front()) + "]";
             case TypeKind::Union: {
                 usedUnion_ = true;
@@ -89,8 +129,17 @@ private:
         return "Any";
     }
 
-    std::string renderField(const Field& f) {
-        const std::string ident = sanitizeIdent(f.key);
+    std::string renderField(const Field& f, std::unordered_set<std::string>& used) {
+        std::string ident = sanitizeIdent(f.key);
+        // Two distinct keys can sanitize to the same identifier (e.g. "a-b" and
+        // "a_b"); suffix collisions so no field is silently dropped.
+        if (!used.insert(ident).second) {
+            const std::string base = ident;
+            for (int n = 2;; ++n) {
+                ident = base + std::to_string(n);
+                if (used.insert(ident).second) break;
+            }
+        }
         const bool needAlias = ident != f.key;
 
         std::string type = renderType(f.type);
@@ -102,12 +151,12 @@ private:
         std::string line = "    " + ident + ": " + type;
         if (f.optional && needAlias) {
             usedField_ = true;
-            line += " = Field(default=None, alias=\"" + f.key + "\")";
+            line += " = Field(default=None, alias=" + pyStringLiteral(f.key) + ")";
         } else if (f.optional) {
             line += " = None";
         } else if (needAlias) {
             usedField_ = true;
-            line += " = Field(alias=\"" + f.key + "\")";
+            line += " = Field(alias=" + pyStringLiteral(f.key) + ")";
         }
         return line + "\n";
     }
