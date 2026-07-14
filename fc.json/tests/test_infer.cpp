@@ -96,6 +96,12 @@ TEST_CASE("empty array element type is Unknown") {
     CHECK(e->type.args.front().kind == TypeKind::Unknown);
 }
 
+TEST_CASE("root keeps its name when a field shares the hint (N1)") {
+    SchemaModule m = infer(R"({"root":{"x":1},"y":2})");
+    REQUIRE(m.root.kind == TypeKind::Object);
+    CHECK(m.at(m.root.objectSchema).name == "Root"); // not Root2
+}
+
 TEST_CASE("top-level array does not crash and names element RootItem") {
     SchemaModule m = infer(R"([{"a":1}])");
     REQUIRE(m.root.kind == TypeKind::List);

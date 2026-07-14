@@ -108,6 +108,12 @@ private:
     // Merge N object instances into one schema: union of fields in first-seen
     // order; a field missing from any instance is Optional (decision (2)).
     SchemaId mergeObjects(const std::vector<NodeId>& objs, const std::string& hint) {
+        // Reserve this object's name before recursing into its fields, so a
+        // descendant sharing the hint cannot take it first (children register
+        // before parents). Without this, {"root":{...},...} emits the top-level
+        // model as Root2 because the "root" field grabs Root.
+        const std::string name = uniqueName(pascalCase(hint));
+
         std::vector<std::string> keyOrder;
         std::unordered_set<std::string> seen;
         std::unordered_map<std::string, std::vector<NodeId>> values;
@@ -137,7 +143,7 @@ private:
         }
 
         const SchemaId id = static_cast<SchemaId>(mod_.schemas.size());
-        mod_.schemas.push_back(Schema{uniqueName(pascalCase(hint)), std::move(fields)});
+        mod_.schemas.push_back(Schema{name, std::move(fields)});
         sigOf_[id] = sig;
         bySigHint_[dedupKey] = id;
         return id;
