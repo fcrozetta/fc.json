@@ -8,15 +8,23 @@
 namespace fc {
 namespace {
 
-const std::unordered_set<std::string>& pythonKeywords() {
-    static const std::unordered_set<std::string> kw = {
+// Names a generated class or field identifier must not take: Python keywords
+// (a plain syntax error), plus the helper names this renderer imports. A class
+// named BaseModel would shadow the import so siblings inherit the wrong base;
+// a field named Field/Optional/Union/Any shadows a symbol used in the same
+// class body and breaks at import time.
+const std::unordered_set<std::string>& reservedNames() {
+    static const std::unordered_set<std::string> names = {
+        // keywords
         "False", "None", "True", "and", "as", "assert", "async", "await",
         "break", "class", "continue", "def", "del", "elif", "else", "except",
         "finally", "for", "from", "global", "if", "import", "in", "is",
         "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try",
         "while", "with", "yield",
+        // imported helpers
+        "BaseModel", "Field", "Any", "Optional", "Union",
     };
-    return kw;
+    return names;
 }
 
 // Turn a raw JSON key into a valid, Pydantic-usable Python identifier. When the
@@ -36,15 +44,15 @@ std::string sanitizeIdent(const std::string& key) {
         std::isdigit(static_cast<unsigned char>(out.front()))) {
         out = "field_" + out;
     }
-    if (pythonKeywords().count(out)) out += "_";
+    if (reservedNames().count(out)) out += "_";
     return out;
 }
 
-// Guard a structural class name against Python keywords/constants (None, True,
-// False, ...). PascalCase already guarantees a valid, non-empty, non-digit
-// start, so a keyword clash is the only remaining illegality.
+// Guard a structural class name against reserved names (keywords and imported
+// helpers like BaseModel). PascalCase already guarantees a valid, non-empty,
+// non-digit start, so a reserved-name clash is the only remaining illegality.
 std::string pyClassName(const std::string& name) {
-    if (pythonKeywords().count(name)) return name + "_";
+    if (reservedNames().count(name)) return name + "_";
     return name;
 }
 

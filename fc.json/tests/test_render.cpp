@@ -95,3 +95,19 @@ TEST_CASE("class names that collide with keywords are guarded (C4)") {
     CHECK(contains(out, "none: None_"));
     CHECK_FALSE(contains(out, "class None(BaseModel):"));
 }
+
+TEST_CASE("class name shadowing an imported helper is guarded (N7)") {
+    // "base_model" PascalCases to BaseModel, which would shadow the import.
+    std::string out = py(R"({"base_model":{"x":1}})");
+    CHECK(contains(out, "class BaseModel_(BaseModel):"));
+    CHECK(contains(out, "base_model: BaseModel_"));
+    CHECK_FALSE(contains(out, "class BaseModel(BaseModel):"));
+}
+
+TEST_CASE("field identifier shadowing a helper is guarded (N8)") {
+    // A field literally named Field would shadow the Field() call in-body.
+    std::string out = py(R"({"Field":1,"Optional":2})");
+    CHECK(contains(out, R"(Field_: int = Field(alias="Field"))"));
+    CHECK(contains(out, R"(Optional_: int = Field(alias="Optional"))"));
+    CHECK_FALSE(contains(out, "    Field: int"));
+}
