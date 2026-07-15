@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Dependencies come from vcpkg (manifest mode). See ADR 0002.
 find_package(RapidJSON CONFIG REQUIRED)  # header-only: sets RAPIDJSON_INCLUDE_DIRS
 find_package(argparse CONFIG REQUIRED)   # target: argparse::argparse
+find_package(tabulate CONFIG REQUIRED)   # target: tabulate::tabulate
 
 # Core library: parse adapter + IR. rapidjson is confined to parser.cpp, so it
 # is a PRIVATE include of the core and never leaks to consumers. See ADR 0001.
@@ -17,8 +18,10 @@ add_library(fc-json-core STATIC
   fc.json/render/pydantic.cpp
   fc.json/render/jsonschema.cpp
   fc.json/render/document.cpp
+  fc.json/render/table.cpp
 )
 target_include_directories(fc-json-core PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
+target_link_libraries(fc-json-core PRIVATE tabulate::tabulate)
 
 # The executable no longer touches rapidjson — it is fully behind the core
 # library's parse adapter, so no rapidjson include here. See ADR 0001.
@@ -35,6 +38,7 @@ add_executable(fc-json-tests
   fc.json/tests/test_render.cpp
   fc.json/tests/test_jsonschema.cpp
   fc.json/tests/test_document.cpp
+  fc.json/tests/test_table.cpp
 )
 target_link_libraries(fc-json-tests PRIVATE doctest::doctest fc-json-core)
 add_test(NAME fc-json-tests COMMAND fc-json-tests)
