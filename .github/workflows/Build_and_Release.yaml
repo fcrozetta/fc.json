@@ -1,58 +1,20 @@
-name: Build, Sign, Notarize, and Release macOS CLI
+name: Release
+
 permissions:
   contents: write
 
 on:
   push:
-    tags:
-      - "*.*.*" # Trigger on version tags like v1.0.0
+    tags: ["*.*.*"]
+
 jobs:
   release:
-    runs-on: ubuntu-latest
-    environment: Deploy
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Release Version
-        id: vars
-        run: echo "RELEASE_TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          release_name: Release ${{ env.RELEASE_TAG }}
-          draft: false
-          prerelease: false
-
-  build-macos:
     runs-on: macos-latest
-    environment: Deploy
-    needs: release
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Decode and Import .p12 Certificate
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
-        run: |
-          echo "$MACOS_CERTIFICATE" | base64 --decode > macos_cert.p12
-          security create-keychain -p "password" build.keychain
-          security import macos_cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "password" build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "password" build.keychain
+      - uses: actions/checkout@v4
 
       # Pin vcpkg to the exact baseline in vcpkg.json so the manifest resolves
-      # deterministically (no unshallow/fetch dance).
+      # deterministically.
       - name: Set up vcpkg
         run: |
           BASELINE=$(jq -r '."builtin-baseline"' vcpkg.json)
@@ -61,76 +23,31 @@ jobs:
           "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
           echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> $GITHUB_ENV
 
-      # Cache the built dependency archives. Keyed on vcpkg.json so it busts
-      # when deps or baseline change.
       - name: Cache vcpkg archives
         uses: actions/cache@v4
         with:
           path: ~/.cache/vcpkg/archives
           key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
 
-      - name: add version in CLI
+      - name: Inject version
         run: |
           TAG=${GITHUB_REF##*/}
           sed -i '' -e "s/{{VERSION}}/$TAG/g" fc.json/main.cpp
 
-      # Both deps are header-only, so a universal binary is just a matter of
-      # compiling our own code for both arches — no per-triplet vcpkg juggling.
-      - name: Build macOS CLI Binary (universal)
+      # Both deps are header-only, so a universal binary is just our own code
+      # compiled for both arches.
+      - name: Build (universal)
         run: |
           cmake --preset default -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
           cmake --build build
           lipo -info build/fc-json
 
-      - name: Code Sign CLI Binary
-        env:
-          CODE_SIGN_IDENTITY: "Developer ID Application: Fernando Crozetta (W9XMAAY8XN)"
-        run: |
-          codesign --force --sign "$CODE_SIGN_IDENTITY" --options runtime build/fc-json
-          codesign --verify --verbose=4 build/fc-json
+      - name: Package
+        run: cd build && zip -r fc-json-macos.zip fc-json
 
-      - name: Zip CLI Binary for Notarization
-        run: |
-          cd build
-          zip -r fc-json.zip fc-json
-          cd ..
-
-      - name: Decode App Store Connect API Key
-        env:
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
-        run: |
-          echo "$APP_STORE_CONNECT_KEY" | base64 --decode > AuthKey.p8
-
-      - name: Notarize CLI Binary
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        run: |
-          xcrun notarytool submit build/fc-json.zip --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} --wait --output-format json > notarization_result.json
-          cat notarization_result.json
-        continue-on-error: true
-
-      - name: Extract RequestUUID
-        id: extract-uuid
-        if: always()
-        run: |
-          REQUEST_UUID=$(jq -r '.id' notarization_result.json)
-          echo "RequestUUID=$REQUEST_UUID" >> $GITHUB_ENV
-
-      - name: Fetch Notarization Log
-        if: always()
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        run: |
-          xcrun notarytool log ${{ env.RequestUUID }} --key AuthKey.p8 --key-id ${{ secrets.APP_STORE_CONNECT_KEY_ID }} --issuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-
-      - name: Upload macOS CLI Binary as Release Asset
-        uses: actions/upload-release-asset@v1
+      - name: Publish release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/fc-json.zip
-          asset_name: "fc-json-macos.zip"
-          asset_content_type: application/octet-stream
+        run: |
+          gh release create "${GITHUB_REF##*/}" build/fc-json-macos.zip \
+            --title "${GITHUB_REF##*/}" --generate-notes
