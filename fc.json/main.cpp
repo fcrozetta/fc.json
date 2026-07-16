@@ -17,6 +17,7 @@
 #include "render/pydantic.hpp"
 #include "render/jsonschema.hpp"
 #include "render/document.hpp"
+#include "render/table.hpp"
 
 namespace {
 
@@ -44,7 +45,7 @@ int main(int argc, char* argv[]) {
 
     std::string format;
     parser.add_argument("-f", "--format")
-        .help("output format: pydantic (default), json-schema, example, redact")
+        .help("output format: pydantic (default), json-schema, example, redact, table")
         .default_value(std::string("pydantic"))
         .store_into(format);
 
@@ -58,9 +59,9 @@ int main(int argc, char* argv[]) {
     // Validated here rather than via argparse .choices() so a bad value gets a
     // clear message instead of argparse's misleading positional-count error.
     if (format != "pydantic" && format != "json-schema" &&
-        format != "example" && format != "redact") {
+        format != "example" && format != "redact" && format != "table") {
         std::cerr << "fc.json: unknown format '" << format
-                  << "' (expected: pydantic, json-schema, example, redact)\n";
+                  << "' (expected: pydantic, json-schema, example, redact, table)\n";
         return 1;
     }
 
@@ -75,8 +76,13 @@ int main(int argc, char* argv[]) {
             output = fc::renderRedacted(tree);
         } else {
             const fc::SchemaModule schema = fc::inferSchema(tree);
-            output = (format == "json-schema") ? fc::renderJsonSchema(schema)
-                                               : fc::renderPydantic(schema);
+            if (format == "json-schema") {
+                output = fc::renderJsonSchema(schema);
+            } else if (format == "table") {
+                output = fc::renderTable(schema);
+            } else {
+                output = fc::renderPydantic(schema);
+            }
         }
         std::cout << output;
     } catch (const std::exception& err) {
