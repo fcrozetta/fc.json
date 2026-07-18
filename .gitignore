@@ -3,7 +3,13 @@
 
 # CMake / vcpkg build output
 build/
+build-xcode/
 vcpkg_installed/
+
+# Xcode project is generated on demand (cmake -G Xcode), never committed.
+# See CONVENTIONS.md and the README "Build from source" section.
+*.xcodeproj/
+xcuserdata/
 
 # rctx: .rctx/ is committed source of truth. Keep the whole tree
 # tracked so a claim scope folder matching an ignore rule (build/, bin/,

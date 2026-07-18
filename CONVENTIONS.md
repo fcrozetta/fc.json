@@ -1,4 +1,4 @@
-# C++ Conventions — fc.json
+# C++ Conventions — fc-json
 
 The standard this repo is held to. Derived from the author's Python discipline
 (type-driven, layered, tooled) applied to C++. When in doubt, prefer

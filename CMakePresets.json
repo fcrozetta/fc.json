@@ -11,6 +11,13 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "xcode",
+      "displayName": "vcpkg + Xcode (generated project)",
+      "generator": "Xcode",
+      "binaryDir": "${sourceDir}/build-xcode",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     }
   ],
   "buildPresets": [

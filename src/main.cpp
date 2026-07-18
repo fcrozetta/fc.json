@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  fc.json
+//  fc-json
 //
 //  Created by Fernando Crozetta on 21/10/2024.
 //
@@ -19,6 +19,13 @@
 #include "render/document.hpp"
 #include "render/table.hpp"
 
+// Version string is baked in at build time via -DFC_VERSION (CMake / release
+// CI). The fallback keeps a bare compile working; a real release always
+// overrides it. See the release/version-define claim.
+#ifndef FC_VERSION
+#define FC_VERSION "0.0.0-dev"
+#endif
+
 namespace {
 
 std::string readFile(const std::string& path) {
@@ -34,7 +41,7 @@ std::string readFile(const std::string& path) {
 } // namespace
 
 int main(int argc, char* argv[]) {
-    argparse::ArgumentParser parser("fc.json", "{{VERSION}}");
+    argparse::ArgumentParser parser("fc-json", FC_VERSION);
     parser.add_description(
         "Inspect JSON and generate schemas, examples, and classes.");
 
@@ -60,7 +67,7 @@ int main(int argc, char* argv[]) {
     // clear message instead of argparse's misleading positional-count error.
     if (format != "pydantic" && format != "json-schema" &&
         format != "example" && format != "redact" && format != "table") {
-        std::cerr << "fc.json: unknown format '" << format
+        std::cerr << "fc-json: unknown format '" << format
                   << "' (expected: pydantic, json-schema, example, redact, table)\n";
         return 1;
     }
@@ -86,7 +93,7 @@ int main(int argc, char* argv[]) {
         }
         std::cout << output;
     } catch (const std::exception& err) {
-        std::cerr << "fc.json: " << err.what() << "\n";
+        std::cerr << "fc-json: " << err.what() << "\n";
         return 1;
     }
 
