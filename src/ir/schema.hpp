@@ -14,7 +14,11 @@ namespace fc {
 using SchemaId = std::uint32_t;
 
 enum class TypeKind {
-    Null, Bool, Int, Float, String, // scalars
+    Null,
+    Bool,
+    Int,
+    Float,
+    String, // scalars
     Object,  // objectSchema is valid
     List,    // args[0] is the element type
     Union,   // args holds 2+ distinct member types

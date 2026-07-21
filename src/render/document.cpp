@@ -8,19 +8,20 @@ namespace fc {
 namespace {
 
 // How a leaf (scalar) value is rendered.
-enum class LeafMode { Example, Redact };
+enum class LeafMode { Example,
+                      Redact };
 
 std::string ind(int depth) { return std::string(static_cast<std::size_t>(depth) * 2, ' '); }
 
 // Type-illustrative default for a scalar node in example mode.
 std::string exampleLeaf(NodeKind kind) {
     switch (kind) {
-        case NodeKind::Null:   return "null";
-        case NodeKind::Bool:   return "true";
-        case NodeKind::Int:    return "0";
-        case NodeKind::Float:  return "1.0";
+        case NodeKind::Null: return "null";
+        case NodeKind::Bool: return "true";
+        case NodeKind::Int: return "0";
+        case NodeKind::Float: return "1.0";
         case NodeKind::String: return "\"string\"";
-        default:               return "null"; // Object/Array handled by caller
+        default: return "null"; // Object/Array handled by caller
     }
 }
 
@@ -38,7 +39,7 @@ private:
         const Node& node = tree_.at(id);
         switch (node.kind) {
             case NodeKind::Object: return emitObject(node, depth);
-            case NodeKind::Array:  return emitArray(node, depth);
+            case NodeKind::Array: return emitArray(node, depth);
             default:
                 return mode_ == LeafMode::Redact ? "\"***\"" : exampleLeaf(node.kind);
         }

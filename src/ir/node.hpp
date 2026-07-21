@@ -15,7 +15,13 @@ namespace fc {
 // arena can grow (and be copied/pruned) without invalidating references.
 using NodeId = std::uint32_t;
 
-enum class NodeKind { Null, Bool, Int, Float, String, Array, Object };
+enum class NodeKind { Null,
+                      Bool,
+                      Int,
+                      Float,
+                      String,
+                      Array,
+                      Object };
 
 struct Node {
     NodeKind kind = NodeKind::Null;

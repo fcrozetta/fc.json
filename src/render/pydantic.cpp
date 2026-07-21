@@ -16,13 +16,47 @@ namespace {
 const std::unordered_set<std::string>& reservedNames() {
     static const std::unordered_set<std::string> names = {
         // keywords
-        "False", "None", "True", "and", "as", "assert", "async", "await",
-        "break", "class", "continue", "def", "del", "elif", "else", "except",
-        "finally", "for", "from", "global", "if", "import", "in", "is",
-        "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try",
-        "while", "with", "yield",
+        "False",
+        "None",
+        "True",
+        "and",
+        "as",
+        "assert",
+        "async",
+        "await",
+        "break",
+        "class",
+        "continue",
+        "def",
+        "del",
+        "elif",
+        "else",
+        "except",
+        "finally",
+        "for",
+        "from",
+        "global",
+        "if",
+        "import",
+        "in",
+        "is",
+        "lambda",
+        "nonlocal",
+        "not",
+        "or",
+        "pass",
+        "raise",
+        "return",
+        "try",
+        "while",
+        "with",
+        "yield",
         // imported helpers
-        "BaseModel", "Field", "Any", "Optional", "Union",
+        "BaseModel",
+        "Field",
+        "Any",
+        "Optional",
+        "Union",
     };
     return names;
 }
@@ -65,7 +99,7 @@ std::string pyStringLiteral(const std::string& s) {
     for (unsigned char c : s) {
         switch (c) {
             case '\\': out += "\\\\"; break;
-            case '"':  out += "\\\""; break;
+            case '"': out += "\\\""; break;
             case '\n': out += "\\n"; break;
             case '\r': out += "\\r"; break;
             case '\t': out += "\\t"; break;
@@ -116,14 +150,14 @@ private:
 
     std::string renderType(const TypeRef& t) {
         switch (t.kind) {
-            case TypeKind::Null:    return "None";
-            case TypeKind::Bool:    return "bool";
-            case TypeKind::Int:     return "int";
-            case TypeKind::Float:   return "float";
-            case TypeKind::String:  return "str";
+            case TypeKind::Null: return "None";
+            case TypeKind::Bool: return "bool";
+            case TypeKind::Int: return "int";
+            case TypeKind::Float: return "float";
+            case TypeKind::String: return "str";
             case TypeKind::Unknown: usedAny_ = true; return "Any";
-            case TypeKind::Object:  return pyClassName(mod_.at(t.objectSchema).name);
-            case TypeKind::List:    return "list[" + renderType(t.args.front()) + "]";
+            case TypeKind::Object: return pyClassName(mod_.at(t.objectSchema).name);
+            case TypeKind::List: return "list[" + renderType(t.args.front()) + "]";
             case TypeKind::Union: {
                 usedUnion_ = true;
                 std::string s = "Union[";
@@ -172,9 +206,9 @@ private:
     std::string header() const {
         std::string h;
         std::vector<std::string> typing;
-        if (usedAny_)      typing.push_back("Any");
+        if (usedAny_) typing.push_back("Any");
         if (usedOptional_) typing.push_back("Optional");
-        if (usedUnion_)    typing.push_back("Union");
+        if (usedUnion_) typing.push_back("Union");
         if (!typing.empty()) {
             h += "from typing import ";
             for (std::size_t i = 0; i < typing.size(); ++i) {

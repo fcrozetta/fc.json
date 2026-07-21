@@ -48,11 +48,11 @@ private:
             case TypeKind::List:
                 return ",\n" + ind(1) + "\"type\": \"array\",\n" + ind(1) +
                        "\"items\": " + inlineType(r.args.front(), 1);
-            case TypeKind::Null:    return ",\n" + ind(1) + "\"type\": \"null\"";
-            case TypeKind::Bool:    return ",\n" + ind(1) + "\"type\": \"boolean\"";
-            case TypeKind::Int:     return ",\n" + ind(1) + "\"type\": \"integer\"";
-            case TypeKind::Float:   return ",\n" + ind(1) + "\"type\": \"number\"";
-            case TypeKind::String:  return ",\n" + ind(1) + "\"type\": \"string\"";
+            case TypeKind::Null: return ",\n" + ind(1) + "\"type\": \"null\"";
+            case TypeKind::Bool: return ",\n" + ind(1) + "\"type\": \"boolean\"";
+            case TypeKind::Int: return ",\n" + ind(1) + "\"type\": \"integer\"";
+            case TypeKind::Float: return ",\n" + ind(1) + "\"type\": \"number\"";
+            case TypeKind::String: return ",\n" + ind(1) + "\"type\": \"string\"";
             case TypeKind::Union:   // a single JSON document value is never a union
             case TypeKind::Unknown: return ""; // top-level accepts anything
         }
@@ -89,11 +89,11 @@ private:
     // A type as a compact JSON Schema fragment.
     std::string inlineType(const TypeRef& t, int depth) {
         switch (t.kind) {
-            case TypeKind::Null:    return R"({ "type": "null" })";
-            case TypeKind::Bool:    return R"({ "type": "boolean" })";
-            case TypeKind::Int:     return R"({ "type": "integer" })";
-            case TypeKind::Float:   return R"({ "type": "number" })";
-            case TypeKind::String:  return R"({ "type": "string" })";
+            case TypeKind::Null: return R"({ "type": "null" })";
+            case TypeKind::Bool: return R"({ "type": "boolean" })";
+            case TypeKind::Int: return R"({ "type": "integer" })";
+            case TypeKind::Float: return R"({ "type": "number" })";
+            case TypeKind::String: return R"({ "type": "string" })";
             case TypeKind::Unknown: return "{}"; // any
             case TypeKind::Object:
                 return "{ \"$ref\": " + jsonString("#/$defs/" + mod_.at(t.objectSchema).name) + " }";

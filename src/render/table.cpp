@@ -14,14 +14,14 @@ namespace {
 // (a trailing "?"), so it is not encoded here.
 std::string typeLabel(const SchemaModule& mod, const TypeRef& t) {
     switch (t.kind) {
-        case TypeKind::Null:    return "None";
-        case TypeKind::Bool:    return "bool";
-        case TypeKind::Int:     return "int";
-        case TypeKind::Float:   return "float";
-        case TypeKind::String:  return "str";
+        case TypeKind::Null: return "None";
+        case TypeKind::Bool: return "bool";
+        case TypeKind::Int: return "int";
+        case TypeKind::Float: return "float";
+        case TypeKind::String: return "str";
         case TypeKind::Unknown: return "Any";
-        case TypeKind::Object:  return mod.at(t.objectSchema).name;
-        case TypeKind::List:    return "list[" + typeLabel(mod, t.args.front()) + "]";
+        case TypeKind::Object: return mod.at(t.objectSchema).name;
+        case TypeKind::List: return "list[" + typeLabel(mod, t.args.front()) + "]";
         case TypeKind::Union: {
             std::string s = "Union[";
             for (std::size_t i = 0; i < t.args.size(); ++i) {
