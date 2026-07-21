@@ -68,22 +68,22 @@ private:
         bool hasNull = false, hasBool = false, hasInt = false, hasFloat = false, hasStr = false;
         for (NodeId id : nodes) {
             switch (tree_.at(id).kind) {
-                case NodeKind::Null:   hasNull = true; break;
-                case NodeKind::Bool:   hasBool = true; break;
-                case NodeKind::Int:    hasInt = true; break;
-                case NodeKind::Float:  hasFloat = true; break;
+                case NodeKind::Null: hasNull = true; break;
+                case NodeKind::Bool: hasBool = true; break;
+                case NodeKind::Int: hasInt = true; break;
+                case NodeKind::Float: hasFloat = true; break;
                 case NodeKind::String: hasStr = true; break;
                 case NodeKind::Object: objs.push_back(id); break;
-                case NodeKind::Array:  arrs.push_back(id); break;
+                case NodeKind::Array: arrs.push_back(id); break;
             }
         }
 
         std::vector<TypeRef> members;
-        if (hasNull)  members.push_back(scalar(TypeKind::Null));
-        if (hasBool)  members.push_back(scalar(TypeKind::Bool));
-        if (hasInt)   members.push_back(scalar(TypeKind::Int));
+        if (hasNull) members.push_back(scalar(TypeKind::Null));
+        if (hasBool) members.push_back(scalar(TypeKind::Bool));
+        if (hasInt) members.push_back(scalar(TypeKind::Int));
         if (hasFloat) members.push_back(scalar(TypeKind::Float));
-        if (hasStr)   members.push_back(scalar(TypeKind::String));
+        if (hasStr) members.push_back(scalar(TypeKind::String));
         if (!objs.empty()) {
             members.push_back(TypeRef{TypeKind::Object, mergeObjects(objs, hint), {}});
         }
@@ -154,14 +154,14 @@ private:
     // is populated bottom-up before the parent is registered.
     std::string typeSig(const TypeRef& t) const {
         switch (t.kind) {
-            case TypeKind::Null:    return "null";
-            case TypeKind::Bool:    return "bool";
-            case TypeKind::Int:     return "int";
-            case TypeKind::Float:   return "float";
-            case TypeKind::String:  return "str";
+            case TypeKind::Null: return "null";
+            case TypeKind::Bool: return "bool";
+            case TypeKind::Int: return "int";
+            case TypeKind::Float: return "float";
+            case TypeKind::String: return "str";
             case TypeKind::Unknown: return "any";
-            case TypeKind::Object:  return "{" + sigOf_.at(t.objectSchema) + "}";
-            case TypeKind::List:    return "[" + typeSig(t.args.front()) + "]";
+            case TypeKind::Object: return "{" + sigOf_.at(t.objectSchema) + "}";
+            case TypeKind::List: return "[" + typeSig(t.args.front()) + "]";
             case TypeKind::Union: {
                 std::vector<std::string> ms;
                 ms.reserve(t.args.size());

@@ -1,0 +1,15 @@
+# Tuned to match the existing hand-written style (see CONVENTIONS.md).
+# Base is Google with a 4-space indent. Overrides preserve the repo's habits:
+# grouped (unsorted) includes, single-space trailing comments, manual line
+# wrapping (ColumnLimit 0), single-line short case labels and enums, and access
+# specifiers flush to the class's outer indent.
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 0
+SortIncludes: false
+SpacesBeforeTrailingComments: 1
+AlignTrailingComments:
+  Kind: Leave
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AccessModifierOffset: -4

@@ -59,7 +59,8 @@ int main(int argc, char* argv[]) {
     try {
         parser.parse_args(argc, argv);
     } catch (const std::exception& err) {
-        std::cerr << err.what() << "\n" << parser;
+        std::cerr << err.what() << "\n"
+                  << parser;
         return 1;
     }
 
